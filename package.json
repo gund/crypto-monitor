@@ -1,0 +1,13 @@
+{
+  "name": "crypto-monitor",
+  "version": "0.0.0",
+  "license": "LGPL-3.0-or-later",
+  "scripts": {},
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "@nx/js": "^17.2.8",
+    "@nx/workspace": "^17.2.8",
+    "nx": "^17.2.8"
+  }
+}
