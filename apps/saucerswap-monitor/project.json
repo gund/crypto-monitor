@@ -1,0 +1,109 @@
+{
+  "name": "saucerswap-monitor",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "cm",
+  "sourceRoot": "apps/saucerswap-monitor/src",
+  "tags": ["type:app", "app:monitor", "mf:remote"],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/saucerswap-monitor",
+        "index": "apps/saucerswap-monitor/src/index.html",
+        "main": "apps/saucerswap-monitor/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "apps/saucerswap-monitor/tsconfig.app.json",
+        "assets": [
+          "apps/saucerswap-monitor/src/favicon.ico",
+          "apps/saucerswap-monitor/src/assets"
+        ],
+        "styles": ["apps/saucerswap-monitor/src/styles.css"],
+        "scripts": [],
+        "customWebpackConfig": {
+          "path": "apps/saucerswap-monitor/webpack.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all",
+          "customWebpackConfig": {
+            "path": "apps/saucerswap-monitor/webpack.prod.config.ts"
+          }
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "port": 4201,
+        "publicHost": "http://localhost:4201"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "saucerswap-monitor:build:production"
+        },
+        "development": {
+          "buildTarget": "saucerswap-monitor:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "saucerswap-monitor:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/saucerswap-monitor/jest.config.ts"
+      }
+    },
+    "serve-static": {
+      "executor": "@nx/web:file-server",
+      "defaultConfiguration": "production",
+      "options": {
+        "buildTarget": "saucerswap-monitor:build",
+        "port": 4201,
+        "watch": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "saucerswap-monitor:build:development"
+        },
+        "production": {
+          "buildTarget": "saucerswap-monitor:build:production"
+        }
+      }
+    }
+  }
+}

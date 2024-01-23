@@ -1,0 +1,30 @@
+{
+  "name": "monitor-app-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/monitor-app-e2e/src",
+  "targets": {
+    "e2e": {
+      "executor": "@nx/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/monitor-app-e2e/cypress.config.ts",
+        "testingType": "e2e",
+        "devServerTarget": "monitor-app:serve:development"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "monitor-app:serve:production"
+        },
+        "ci": {
+          "devServerTarget": "monitor-app:serve-static"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["monitor-app"]
+}
