@@ -1,0 +1,30 @@
+{
+  "name": "notifier",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/notifier/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/notifier",
+        "main": "libs/notifier/src/index.ts",
+        "tsConfig": "libs/notifier/tsconfig.lib.json",
+        "assets": ["libs/notifier/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/notifier/jest.config.ts"
+      }
+    }
+  },
+  "tags": ["lib"]
+}

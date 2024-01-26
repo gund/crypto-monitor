@@ -1,4 +1,11 @@
 import { withModuleFederation } from '@nx/angular/module-federation';
-import config from './module-federation.config';
+import mfConfig from './module-federation.config';
 
-export default withModuleFederation(config);
+export default async (config: any) =>
+  (await withModuleFederation(mfConfig))({
+    ...config,
+    output: {
+      ...config?.output,
+      scriptType: 'text/javascript',
+    },
+  });

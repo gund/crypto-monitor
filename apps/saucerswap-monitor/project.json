@@ -2,7 +2,7 @@
   "name": "saucerswap-monitor",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "prefix": "cm",
+  "prefix": "sm",
   "sourceRoot": "apps/saucerswap-monitor/src",
   "tags": ["type:app", "app:monitor", "mf:remote"],
   "targets": {
@@ -19,11 +19,16 @@
           "apps/saucerswap-monitor/src/favicon.ico",
           "apps/saucerswap-monitor/src/assets"
         ],
-        "styles": ["apps/saucerswap-monitor/src/styles.css"],
+        "styles": [
+          "@angular/material/prebuilt-themes/indigo-pink.css",
+          "apps/saucerswap-monitor/src/styles.css"
+        ],
         "scripts": [],
         "customWebpackConfig": {
           "path": "apps/saucerswap-monitor/webpack.config.ts"
-        }
+        },
+        "serviceWorker": true,
+        "ngswConfigPath": "apps/saucerswap-monitor/ngsw-config.json"
       },
       "configurations": {
         "production": {

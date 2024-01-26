@@ -1,16 +1,5 @@
-import { withModuleFederation } from '@nx/angular/module-federation';
-import config from './module-federation.config';
+import config from './webpack.config';
 
-export default withModuleFederation({
-  ...config,
-  /*
-   * Remote overrides for production.
-   * Each entry is a pair of a unique name and the URL where it is deployed.
-   *
-   * e.g.
-   * remotes: [
-   *   ['app1', 'https://app1.example.com'],
-   *   ['app2', 'https://app2.example.com'],
-   * ]
-   */
+export default async (conf: any) => ({
+  ...(await config(conf)),
 });
