@@ -60,13 +60,6 @@ export class WebPushNotifier<TExtras = unknown>
       },
     );
 
-    if (response.statusCode !== 201 && response.statusCode !== 202) {
-      throw new Error(
-        `Failed to send notification. Status code: ${response.statusCode}
-        Error: ${response.body}`,
-      );
-    }
-
     const resourceUrl =
       response.headers['location'] || response.headers['Location'];
 

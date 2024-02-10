@@ -40,7 +40,7 @@ export class SaucerSwapLPP {
             ),
           ),
         )
-        .subscribe(),
+        .subscribe({ error: console.error }),
     );
 
     const recipients = await this.notifierRegistry.getAllRecipients();
@@ -133,7 +133,14 @@ export class SaucerSwapLPP {
       // remove it from the notified list so it can be re-notified again
       this.notifiedRecipientsByPosition.delete(position.tokenSN);
     } else {
-      await this.notifyPositionNotInRange(position);
+      try {
+        await this.notifyPositionNotInRange(position);
+      } catch (e) {
+        console.error(
+          `Failed to notify position not in range ${position.tokenSN}:`,
+          e,
+        );
+      }
     }
   }
 
