@@ -1,0 +1,30 @@
+{
+  "name": "lmdb-storage",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/lmdb-storage/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/lmdb-storage",
+        "main": "libs/lmdb-storage/src/index.ts",
+        "tsConfig": "libs/lmdb-storage/tsconfig.lib.json",
+        "assets": ["libs/lmdb-storage/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/lmdb-storage/jest.config.ts"
+      }
+    }
+  },
+  "tags": ["lib"]
+}

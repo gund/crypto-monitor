@@ -1,0 +1,29 @@
+{
+  "name": "conventional-mf",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/conventional-mf/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/conventional-mf",
+        "main": "libs/conventional-mf/src/index.ts",
+        "tsConfig": "libs/conventional-mf/tsconfig.lib.json",
+        "assets": ["libs/conventional-mf/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/conventional-mf/jest.config.ts"
+      }
+    }
+  },
+  "tags": ["lib"]
+}

@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { loadRemoteModule } from '@nx/angular/mf';
+import { importNgRemoteModule } from '@crypto-monitor/conventional-mf';
 
 export interface AppRoutesConfig {
   remotes?: Record<string, string>;
@@ -9,8 +9,7 @@ export function appRoutes(config?: AppRoutesConfig): Route[] {
   return [
     ...Object.keys(config?.remotes ?? {}).map((path) => ({
       path,
-      loadChildren: () =>
-        loadRemoteModule(path, './remote-entry').then((m) => m.remoteRoutes),
+      loadChildren: () => importNgRemoteModule(path).then((m) => m.routes),
     })),
     {
       path: '',

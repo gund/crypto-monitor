@@ -1,0 +1,74 @@
+{
+  "name": "monitor-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/monitor-api/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/monitor-api",
+        "main": "apps/monitor-api/src/main.ts",
+        "tsConfig": "apps/monitor-api/tsconfig.app.json",
+        "assets": ["apps/monitor-api/src/assets"],
+        "webpackConfig": "apps/monitor-api/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "monitor-api:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "monitor-api:build:development"
+        },
+        "production": {
+          "buildTarget": "monitor-api:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/monitor-api/jest.config.ts"
+      }
+    },
+    "image": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "docker buildx build --platform {args.platforms} -t gundua/crypto-monitor:latest {args.output} -f apps/monitor-api/container/Dockerfile .",
+        "output": ""
+      },
+      "configurations": {
+        "init": {
+          "command": "docker buildx create --use --bootstrap"
+        },
+        "amd64": {
+          "platforms": "linux/amd64"
+        },
+        "arm64": {
+          "platforms": "linux/arm64/v8"
+        },
+        "all": {
+          "platforms": "linux/amd64,linux/arm64/v8"
+        }
+      }
+    }
+  },
+  "tags": ["type:app", "app:monitor"]
+}

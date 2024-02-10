@@ -2,7 +2,7 @@
   "name": "monitor-app",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "prefix": "cm",
+  "prefix": "ma",
   "sourceRoot": "apps/monitor-app/src",
   "tags": ["type:app", "app:monitor", "mf:host"],
   "targets": {

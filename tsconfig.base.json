@@ -8,14 +8,27 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "es2015",
+    "target": "ESNext",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "useDefineForClassFields": false,
+    "lib": ["ESNext", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "strict": true,
     "baseUrl": ".",
     "paths": {
-      "saucerswap-monitor/*": ["apps/saucerswap-monitor/src/app/*/index.ts"]
+      "@crypto-monitor/conventional-mf": ["libs/conventional-mf/src/index.ts"],
+      "@crypto-monitor/lmdb-storage": ["libs/lmdb-storage/src/index.ts"],
+      "@crypto-monitor/monitor": ["libs/monitor/src/index.ts"],
+      "@crypto-monitor/notifier": ["libs/notifier/src/index.ts"],
+      "@crypto-monitor/saucer-swap-monitor": [
+        "libs/saucer-swap-monitor/src/index.ts"
+      ],
+      "@crypto-monitor/storage": ["libs/storage/src/index.ts"],
+      "@crypto-monitor/url-monitor": ["libs/url-monitor/src/index.ts"],
+      "@crypto-monitor/web-push-notifier": [
+        "libs/web-push-notifier/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

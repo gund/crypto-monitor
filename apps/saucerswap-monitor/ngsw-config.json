@@ -1,0 +1,62 @@
+{
+  "$schema": "../../node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    },
+    {
+      "name": "fonts",
+      "installMode": "lazy",
+      "resources": {
+        "urls": ["https://fonts.gstatic.com/**"]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "ss-api-pools",
+      "urls": ["https://api.saucerswap.finance/v2/pools"],
+      "version": 2,
+      "cacheConfig": {
+        "maxSize": 1,
+        "maxAge": "3d",
+        "timeout": "5s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "ss-api-positions",
+      "urls": ["https://api.saucerswap.finance/V2/nfts/**"],
+      "version": 2,
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "10m",
+        "timeout": "5s",
+        "strategy": "performance"
+      },
+      "cacheQueryOptions": { "ignoreSearch": true }
+    }
+  ]
+}
