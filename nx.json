@@ -38,7 +38,12 @@
       "inputs": ["production", "^production"]
     },
     "deploy-firebase": {
+      "cache": false,
       "dependsOn": ["build"],
+      "inputs": ["production", "^production"]
+    },
+    "image": {
+      "cache": true,
       "inputs": ["production", "^production"]
     }
   },

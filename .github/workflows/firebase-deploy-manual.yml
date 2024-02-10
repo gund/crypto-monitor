@@ -1,8 +1,6 @@
-name: Deploy to Firebase
+name: Manual deploy to Firebase
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,13 +20,10 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
-      - uses: nrwl/nx-set-shas@v3
-        with:
-          error-on-no-successful-workflow: false
       - run: pnpm i --frozen-lockfile
       - run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}" > firebase-service-account.json
         name: Authorize Firebase
-      - run: npx nx affected --target=deploy-firebase
+      - run: npx nx run-many --target=deploy-firebase
         name: Deploying to Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
