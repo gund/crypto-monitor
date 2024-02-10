@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: crypto-monitor-api-claim
+  name: crypto-monitor-api-claim
+spec:
+  storageClassName: crypto-monitor-api-hostpath
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

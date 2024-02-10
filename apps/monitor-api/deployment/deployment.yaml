@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    app: crypto-monitor-api
+  name: crypto-monitor-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crypto-monitor-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: crypto-monitor-api
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - gundnet-k8s
+      containers:
+        - name: crypto-monitor-api
+          image: gundua/crypto-monitor:latest
+          env:
+            - name: ENABLE_CORS
+              value: 'true'
+            - name: NOTIFIER_STORAGE_PATH
+              value: '/data/ss-notifier-db'
+            - name: VAPID_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: crypto-monitor-api
+                  key: email
+            - name: VAPID_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: crypto-monitor-api
+                  key: pubkey
+            - name: VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: crypto-monitor-api
+                  key: key
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              memory: '0.5Gi'
+              cpu: '0.5'
+            requests:
+              memory: '0.1Gi'
+              cpu: '0.1'
+          volumeMounts:
+            - mountPath: /data
+              name: crypto-monitor-api-claim
+      restartPolicy: Always
+      volumes:
+        - name: crypto-monitor-api-claim
+          persistentVolumeClaim:
+            claimName: crypto-monitor-api-claim
+status: {}
