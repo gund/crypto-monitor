@@ -6,8 +6,6 @@ metadata:
     app: crypto-monitor-api
   name: crypto-monitor-api
 spec:
-  externalIPs:
-    - 49.12.110.104
   ports:
     - name: '4000'
       port: 4000

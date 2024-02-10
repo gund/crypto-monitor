@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crypto-monitor-api
+spec:
+  ingressClassName: ngrok
+  rules:
+    - host: mistakenly-winning-gull.ngrok-free.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crypto-monitor-api
+                port:
+                  number: 4000
