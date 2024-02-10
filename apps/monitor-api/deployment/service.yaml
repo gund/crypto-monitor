@@ -9,9 +9,9 @@ spec:
   externalIPs:
     - 49.12.110.104
   ports:
-    - name: '3000'
-      port: 3000
-      targetPort: 3000
+    - name: '4000'
+      port: 4000
+      targetPort: 4000
   selector:
     app: crypto-monitor-api
 status:
