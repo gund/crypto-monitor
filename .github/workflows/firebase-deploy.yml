@@ -1,0 +1,33 @@
+name: Deploy to Firebase
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v3
+        with:
+          version: '8'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - uses: nrwl/nx-set-shas@v3
+        with:
+          error-on-no-successful-workflow: false
+      - run: pnpm i --frozen-lockfile
+      - run: npx nx affected --target=deploy-firebase
+        name: Deploying to Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}
+          SSM_API_URL: ${{ secrets.SSM_API_URL }}

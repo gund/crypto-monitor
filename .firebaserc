@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "gund-crypto-monitor"
+  },
+  "targets": {
+    "gund-crypto-monitor": {
+      "hosting": {
+        "saucerswap-monitor": [
+          "gund-crypto-monitor"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

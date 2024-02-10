@@ -36,6 +36,10 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
+    },
+    "deploy-firebase": {
+      "dependsOn": ["build"],
+      "inputs": ["production", "^production"]
     }
   },
   "namedInputs": {

@@ -109,6 +109,12 @@
           "buildTarget": "saucerswap-monitor:build:production"
         }
       }
+    },
+    "deploy-firebase": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx firebase deploy --only hosting:saucerswap-monitor"
+      }
     }
   }
 }
