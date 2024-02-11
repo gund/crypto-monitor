@@ -19,7 +19,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   if (process.env.ENABLE_CORS) {
-    app.enableCors();
+    app.enableCors({ origin: process.env.ENABLE_CORS });
   }
 
   await app

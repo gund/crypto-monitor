@@ -32,7 +32,7 @@ spec:
           image: gundua/crypto-monitor:latest
           env:
             - name: ENABLE_CORS
-              value: 'true'
+              value: 'https://gund-crypto-monitor.web.app'
             - name: PORT
               value: '4000'
             - name: NOTIFIER_STORAGE_PATH
