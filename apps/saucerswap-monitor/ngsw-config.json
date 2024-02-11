@@ -9,7 +9,7 @@
         "files": [
           "/favicon.ico",
           "/index.html",
-          "/manifest.webmanifest",
+          "/assets/manifest.json",
           "/*.css",
           "/*.js"
         ]
@@ -42,7 +42,7 @@
       "cacheConfig": {
         "maxSize": 1,
         "maxAge": "3d",
-        "timeout": "5s",
+        "timeout": "2s",
         "strategy": "freshness"
       }
     },
@@ -53,7 +53,7 @@
       "cacheConfig": {
         "maxSize": 100,
         "maxAge": "10m",
-        "timeout": "5s",
+        "timeout": "2s",
         "strategy": "performance"
       },
       "cacheQueryOptions": { "ignoreSearch": true }

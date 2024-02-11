@@ -21,18 +21,22 @@
       </div>
       @for (position of wallet.positions$ | async; track position.tokenSN) {
       <mat-list-item>
-        <mat-icon
-          matListItemIcon
-          [color]="position.isInRange ? 'accent' : 'warn'"
-        >
-          {{ position.isInRange ? 'check_circle' : 'error' }}
-        </mat-icon>
+        <div matListItemAvatar>
+          <mat-icon [color]="position.isInRange ? 'primary' : 'warn'">
+            {{ position.isInRange ? 'check_circle' : 'error' }}
+          </mat-icon>
+        </div>
         <div matListItemTitle>
-          <a href="{{ getLPPositionUrl(position) }}" target="_blank"
+          <a
+            mat-button
+            href="{{ getLPPositionUrl(position) }}"
+            target="_blank"
+            color="primary"
             >{{ position.token0?.symbol }}/{{ position.token1?.symbol }}</a
           >
           <mat-chip
-            [color]="position.isInRange ? 'accent' : 'warn'"
+            [color]="position.isInRange ? 'primary' : 'warn'"
+            highlighted
             disableRipple
           >
             {{ position.isInRange ? 'In range' : 'Out of range' }}
