@@ -21,7 +21,7 @@ jobs:
           node-version: 'lts/*'
           cache: 'pnpm'
       - run: pnpm i --frozen-lockfile
-      - run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}" > firebase-service-account.json
+      - run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}' > firebase-service-account.json
         name: Authorize Firebase
       - run: npx nx run-many --target=deploy-firebase
         name: Deploying to Firebase
