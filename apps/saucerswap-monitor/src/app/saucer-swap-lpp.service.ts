@@ -7,6 +7,7 @@ import { FetchUrlMonitor } from '@crypto-monitor/url-monitor';
 import { Observable, firstValueFrom } from 'rxjs';
 import { KeyValueStorageService } from './key-value-storage.service';
 import { SaucerSwapPushService } from './saucer-swap-push.service';
+import { OnAppInit } from './app-init.service';
 
 export interface SaucerSwapLPWallet {
   walletId: string;
@@ -18,7 +19,7 @@ export interface SaucerSwapLPPosition extends PositionWithPool {
 }
 
 @Injectable({ providedIn: 'root' })
-export class SaucerSwapLPPService implements OnDestroy {
+export class SaucerSwapLPPService implements OnAppInit, OnDestroy {
   private static readonly WALLET_IDS_KEY = 'ss:wallet-ids';
 
   private readonly walletIds = new Set<string>();
@@ -30,15 +31,14 @@ export class SaucerSwapLPPService implements OnDestroy {
   constructor(
     private readonly storage: KeyValueStorageService<string[]>,
     private readonly ssPushService: SaucerSwapPushService,
-  ) {
-    this.init();
-  }
+  ) {}
 
-  async init() {
+  async onAppInit() {
     const walletIds = await this.storage.get(
       SaucerSwapLPPService.WALLET_IDS_KEY,
     );
 
+    walletIds?.forEach((walletId) => this.walletIds.add(walletId));
     await this.monitor.init(walletIds?.map((walletId) => ({ walletId })));
   }
 

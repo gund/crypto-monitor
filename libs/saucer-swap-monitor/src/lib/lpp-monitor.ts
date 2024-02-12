@@ -59,12 +59,8 @@ export class SaucerSwapLPPMonitor {
 
   constructor(protected readonly config: SaucerSwapLPPMonitorConfig) {}
 
-  getWallets(): Observable<SaucerSwapLPWallet[]> {
-    return this.wallets$;
-  }
-
   async init(initialData: SaucerSwapLPPWalletData[] = []) {
-    const walletIds = initialData?.map((data) => data.walletId);
+    const walletIds = initialData.map((data) => data.walletId);
 
     const refs = await Promise.all(
       walletIds.map((walletId) => this.monitorWallet({ walletId })),
@@ -84,6 +80,10 @@ export class SaucerSwapLPPMonitor {
     ]);
     this.poolRef$.complete();
     this.walletRefs$.complete();
+  }
+
+  getWallets(): Observable<SaucerSwapLPWallet[]> {
+    return this.wallets$;
   }
 
   async start(data: SaucerSwapLPPWalletData) {

@@ -62,16 +62,17 @@
     </ng-template>
   </mat-expansion-panel>
   } @empty {
-  <mat-list-item>
-    <mat-icon matListItemIcon>priority_high</mat-icon>
-    <div matListItemTitle>No wallets found!</div>
-    <span matListItemLine>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>No wallets found!</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
       Please
       <button mat-button color="accent" (click)="addWallet()">
         add a wallet
       </button>
-    </span>
-  </mat-list-item>
+    </mat-card-content>
+  </mat-card>
   }
 </mat-accordion>
 

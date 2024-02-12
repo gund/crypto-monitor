@@ -3,7 +3,7 @@ import { BrowserLocalStorage } from '@crypto-monitor/storage';
 
 @Injectable({ providedIn: 'root' })
 export class KeyValueStorageService<
-  T = unknown
+  T = unknown,
 > extends BrowserLocalStorage<T> {
   constructor(@Inject(BrowserLocalStorageToken) storage: Storage) {
     super(storage);
@@ -11,6 +11,6 @@ export class KeyValueStorageService<
 }
 
 export const BrowserLocalStorageToken = new InjectionToken(
-  'BrowserLocalStorageToken',
-  { providedIn: 'root', factory: () => window.localStorage }
+  'BrowserLocalStorage',
+  { providedIn: 'root', factory: () => window.localStorage },
 );
