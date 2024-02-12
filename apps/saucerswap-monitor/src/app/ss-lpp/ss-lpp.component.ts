@@ -9,14 +9,18 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltip } from '@angular/material/tooltip';
 import { getLPPositionUrl } from '@crypto-monitor/saucer-swap-monitor';
 import { SaucerSwapLPPService } from '../saucer-swap-lpp.service';
 import { SsAddWalletDialogComponent } from '../ss-add-wallet-dialog/ss-add-wallet-dialog.component';
+import { map } from 'rxjs';
+import { PositionsSummaryPipe } from '../positions-summary.pipe';
 
 @Component({
   selector: 'sm-ss-lpp',
@@ -31,6 +35,9 @@ import { SsAddWalletDialogComponent } from '../ss-add-wallet-dialog/ss-add-walle
     MatChipsModule,
     MatButtonModule,
     MatTooltip,
+    MatToolbarModule,
+    MatExpansionModule,
+    PositionsSummaryPipe,
   ],
   templateUrl: './ss-lpp.component.html',
   styleUrl: './ss-lpp.component.css',
@@ -39,6 +46,7 @@ import { SsAddWalletDialogComponent } from '../ss-add-wallet-dialog/ss-add-walle
 })
 export class SsLppComponent {
   wallets$ = this.ssLPService.getWallets();
+  isOneWallet$ = this.wallets$.pipe(map((wallets) => wallets.length === 1));
   getLPPositionUrl = getLPPositionUrl;
 
   constructor(

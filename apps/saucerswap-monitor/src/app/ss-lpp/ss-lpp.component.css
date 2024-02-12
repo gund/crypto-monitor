@@ -4,3 +4,13 @@
   right: 1em;
   z-index: 10;
 }
+
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+mat-panel-description {
+  justify-content: space-between;
+}

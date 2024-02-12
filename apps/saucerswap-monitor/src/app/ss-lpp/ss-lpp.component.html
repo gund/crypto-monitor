@@ -1,77 +1,84 @@
-<mat-card appearance="outlined">
-  <mat-card-header>
-    <mat-card-title>Wallet Positions</mat-card-title>
-  </mat-card-header>
+<mat-toolbar color="primary">
+  <span>Wallet Positions</span>
+</mat-toolbar>
 
-  <mat-card-content>
-    <mat-list>
-      @for (wallet of wallets$ | async; track wallet.walletId) {
-      <div mat-subheader>
-        <span>
-          Wallet <strong>#{{ wallet.walletId }}</strong>
-        </span>
+<mat-accordion multi>
+  @for (wallet of wallets$ | async; track wallet.walletId) {
+  <mat-expansion-panel [expanded]="isOneWallet$ | async">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <strong>#{{ wallet.walletId }}</strong>
+      </mat-panel-title>
+      <mat-panel-description>
+        <span>{{ wallet.positions$ | async | positionsSummary }}</span>
         <button
           mat-icon-button
+          color="warn"
           aria-label="Remove wallet"
           matTooltip="Remove wallet"
           (click)="removeWallet(wallet.walletId)"
         >
           <mat-icon>delete</mat-icon>
         </button>
-      </div>
-      @for (position of wallet.positions$ | async; track position.tokenSN) {
-      <mat-list-item>
-        <div matListItemAvatar>
-          <mat-icon [color]="position.isInRange ? 'primary' : 'warn'">
-            {{ position.isInRange ? 'check_circle' : 'error' }}
-          </mat-icon>
-        </div>
-        <div matListItemTitle>
-          <a
-            mat-button
-            href="{{ getLPPositionUrl(position) }}"
-            target="_blank"
-            color="primary"
-            >{{ position.token0?.symbol }}/{{ position.token1?.symbol }}</a
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <ng-template matExpansionPanelContent>
+      <mat-list>
+        @for (position of wallet.positions$ | async; track position.tokenSN) {
+        <mat-list-item>
+          <div matListItemAvatar>
+            <mat-icon [color]="position.isInRange ? 'primary' : 'warn'">
+              {{ position.isInRange ? 'check_circle' : 'error' }}
+            </mat-icon>
+          </div>
+          <div matListItemTitle>
+            <a
+              mat-button
+              href="{{ getLPPositionUrl(position) }}"
+              target="_blank"
+              color="primary"
+              >{{ position.token0?.symbol }}/{{ position.token1?.symbol }}</a
+            >
+            <mat-chip
+              [color]="position.isInRange ? 'primary' : 'warn'"
+              highlighted
+              disableRipple
+            >
+              {{ position.isInRange ? 'In range' : 'Out of range' }}
+            </mat-chip>
+          </div>
+          <span matListItemLine>Current: {{ position.pool.tickCurrent }}</span>
+          <span matListItemLine
+            >Min: {{ position.tickLower }} / Max: {{ position.tickUpper }}</span
           >
-          <mat-chip
-            [color]="position.isInRange ? 'primary' : 'warn'"
-            highlighted
-            disableRipple
-          >
-            {{ position.isInRange ? 'In range' : 'Out of range' }}
-          </mat-chip>
-        </div>
-        <span matListItemLine>Current: {{ position.pool.tickCurrent }}</span>
-        <span matListItemLine
-          >Min: {{ position.tickLower }} / Max: {{ position.tickUpper }}</span
-        >
-      </mat-list-item>
-      <mat-divider></mat-divider>
-      } @empty {
-      <mat-list-item>
-        <div matListItemTitle>No positions found in this wallet!</div>
-      </mat-list-item>
-      } } @empty {
-      <mat-list-item>
-        <mat-icon matListItemIcon>priority_high</mat-icon>
-        <div matListItemTitle>No wallets found!</div>
-        <span matListItemLine>
-          Please
-          <button mat-button color="primary" (click)="addWallet()">
-            add a wallet
-          </button>
-        </span>
-      </mat-list-item>
-      }
-    </mat-list>
-  </mat-card-content>
-</mat-card>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+        } @empty {
+        <mat-list-item>
+          <div matListItemTitle>No positions found in this wallet!</div>
+        </mat-list-item>
+        }
+      </mat-list>
+    </ng-template>
+  </mat-expansion-panel>
+  } @empty {
+  <mat-list-item>
+    <mat-icon matListItemIcon>priority_high</mat-icon>
+    <div matListItemTitle>No wallets found!</div>
+    <span matListItemLine>
+      Please
+      <button mat-button color="accent" (click)="addWallet()">
+        add a wallet
+      </button>
+    </span>
+  </mat-list-item>
+  }
+</mat-accordion>
 
 <button
   mat-fab
   class="add-wallet-fab"
-  color="primary"
+  color="accent"
   aria-label="Add wallet"
   matTooltip="Add wallet"
   (click)="addWallet()"

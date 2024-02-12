@@ -167,6 +167,7 @@ export class SaucerSwapLPPMonitor {
           };
         }),
       ),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
   }
 
