@@ -1,8 +1,10 @@
 import {
+  NotificationData,
+  NotificationRecipient,
   NotificationSubscription,
   NotifierRegistry,
 } from '@crypto-monitor/notifier';
-import { Subscription, merge, switchMap } from 'rxjs';
+import { Subscription, merge, retry, switchMap } from 'rxjs';
 import { PositionWithPool } from './api-interfaces';
 import { SaucerSwapLPPOutOfRangeEvent } from './events';
 import {
@@ -12,36 +14,31 @@ import {
   SaucerSwapLPWallet,
 } from './lpp-monitor';
 import { NotifierWithIdGenerator } from './notifier';
+import { Logger } from './logger';
 
 export interface SaucerSwapLPPConfig {
   monitor: SaucerSwapLPPMonitor;
   notifier: NotifierWithIdGenerator<SaucerSwapLPPWalletData>;
   notifierRegistry: NotifierRegistry<SaucerSwapLPPWalletData>;
+  logger?: Logger;
 }
 
 export class SaucerSwapLPP {
-  protected monitor = this.config.monitor;
-  protected notifier = this.config.notifier;
-  protected notifierRegistry = this.config.notifierRegistry;
-  protected subscription = new Subscription();
-  protected walletIdToRecipientIds = new Map<string, Set<string>>();
-  protected notifiedRecipientsByPosition = new Map<number, Set<string>>();
+  protected readonly monitor = this.config.monitor;
+  protected readonly notifier = this.config.notifier;
+  protected readonly notifierRegistry = this.config.notifierRegistry;
+  protected readonly logger = this.config.logger || console;
+  protected readonly subscription = new Subscription();
+  protected readonly walletIdToRecipientIds = new Map<string, Set<string>>();
+  protected readonly notifiedRecipientsByPosition = new Map<
+    number,
+    Set<string>
+  >();
 
   constructor(protected readonly config: SaucerSwapLPPConfig) {}
 
   async init() {
-    this.subscription.add(
-      this.monitor
-        .getWallets()
-        .pipe(
-          switchMap((wallets) =>
-            merge(
-              ...wallets.map((wallet) => this.monitorWalletPositions(wallet)),
-            ),
-          ),
-        )
-        .subscribe({ error: console.error }),
-    );
+    this.initMonitoring();
 
     const recipients = await this.notifierRegistry.getAllRecipients();
     const data = await Promise.all(
@@ -73,6 +70,10 @@ export class SaucerSwapLPP {
       this.dataToSubscription(data),
     );
 
+    this.logger.log(
+      `New recipient ${recipient.id} subscribed to wallet ${data.walletId}`,
+    );
+
     const extras = await recipient.getExtras();
 
     if (!this.walletIdToRecipientIds.has(extras.walletId)) {
@@ -94,6 +95,10 @@ export class SaucerSwapLPP {
     if (!recipient) {
       return;
     }
+
+    this.logger.log(
+      `Recipient ${recipient.id} unsubscribed from wallet ${data.walletId}`,
+    );
 
     const extras = await recipient.getExtras();
 
@@ -117,6 +122,25 @@ export class SaucerSwapLPP {
     }
   }
 
+  protected initMonitoring() {
+    this.subscription.add(
+      this.monitor
+        .getWallets()
+        .pipe(
+          switchMap((wallets) =>
+            merge(
+              ...wallets.map((wallet) => this.monitorWalletPositions(wallet)),
+            ),
+          ),
+          retry({ delay: 1000 }),
+        )
+        .subscribe({
+          error: (e) => this.logger.error('Monitor error:', e),
+          complete: () => this.logger.error('Monitor completed unexpectedly!'),
+        }),
+    );
+  }
+
   protected monitorWalletPositions(wallet: SaucerSwapLPWallet) {
     return wallet.positions$.pipe(
       switchMap((positions) =>
@@ -128,6 +152,10 @@ export class SaucerSwapLPP {
   }
 
   protected async monitorPosition(position: SaucerSwapLPPosition) {
+    this.logger.log(
+      `Position ${position.tokenSN} is in range: ${position.isInRange}`,
+    );
+
     if (position.isInRange) {
       // If position was previously notified and now is in range,
       // remove it from the notified list so it can be re-notified again
@@ -136,7 +164,7 @@ export class SaucerSwapLPP {
       try {
         await this.notifyPositionNotInRange(position);
       } catch (e) {
-        console.error(
+        this.logger.error(
           `Failed to notify position not in range ${position.tokenSN}:`,
           e,
         );
@@ -173,10 +201,13 @@ export class SaucerSwapLPP {
         continue;
       }
 
-      await this.notifier.sendNotification({
-        recipient,
-        payload: this.getPositionOutOfRangePayload(position),
-      });
+      this.logger.log(
+        `Notifying recipient ${recipient.id} about position ${position.tokenSN} out of range`,
+      );
+
+      await this.notifier.sendNotification(
+        this.getNotificationData(recipient, position),
+      );
 
       if (!this.notifiedRecipientsByPosition.has(position.tokenSN)) {
         this.notifiedRecipientsByPosition.set(position.tokenSN, new Set());
@@ -189,8 +220,14 @@ export class SaucerSwapLPP {
     }
   }
 
-  protected getPositionOutOfRangePayload(position: PositionWithPool): unknown {
-    return new SaucerSwapLPPOutOfRangeEvent(position);
+  protected getNotificationData(
+    recipient: NotificationRecipient<SaucerSwapLPPWalletData>,
+    position: PositionWithPool,
+  ): NotificationData<SaucerSwapLPPWalletData> {
+    return {
+      recipient,
+      payload: new SaucerSwapLPPOutOfRangeEvent(position),
+    };
   }
 }
 

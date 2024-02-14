@@ -1,4 +1,5 @@
 import { LmdbStorage } from '@crypto-monitor/lmdb-storage';
+import { NotificationRecipient } from '@crypto-monitor/notifier';
 import {
   PositionWithPool,
   SaucerSwapLPP,
@@ -7,8 +8,12 @@ import {
   SaucerSwapNotifier,
 } from '@crypto-monitor/saucer-swap-monitor';
 import { FetchUrlMonitor } from '@crypto-monitor/url-monitor';
-import { WebPushNotificationRecipientData } from '@crypto-monitor/web-push-notifier';
-import { Injectable } from '@nestjs/common';
+import {
+  WebPushNotificationData,
+  WebPushNotificationRecipientData,
+  WebPushNotificationUrgency,
+} from '@crypto-monitor/web-push-notifier';
+import { Injectable, Logger } from '@nestjs/common';
 import { SSLPPOutOfRangeNotification } from './events';
 import { SaucerSwapConfigService } from './saucer-swap-config.service';
 import { WebPushNotifierWithIdGeneratorAdapter } from './web-push-notifier-adapter';
@@ -42,14 +47,22 @@ export class SaucerSwapLPPService extends SaucerSwapLPP {
       monitor: monitor,
       notifier: new SaucerSwapNotifier(notifier),
       notifierRegistry: notifier,
+      logger: Logger,
     });
 
     this.init().catch((e) =>
-      console.error('Failed to initialize SaucerSwapLPPService:', e),
+      Logger.error('Failed to initialize SaucerSwapLPPService:', e),
     );
   }
 
-  protected override getPositionOutOfRangePayload(position: PositionWithPool) {
-    return { notification: new SSLPPOutOfRangeNotification(position) };
+  protected override getNotificationData(
+    recipient: NotificationRecipient<SaucerSwapLPPWalletData>,
+    position: PositionWithPool,
+  ) {
+    return {
+      ...super.getNotificationData(recipient, position),
+      payload: { notification: new SSLPPOutOfRangeNotification(position) },
+      urgency: WebPushNotificationUrgency.High,
+    } as WebPushNotificationData<SaucerSwapLPPWalletData>;
   }
 }

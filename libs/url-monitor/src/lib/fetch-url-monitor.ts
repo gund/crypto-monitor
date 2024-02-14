@@ -11,6 +11,7 @@ import {
   switchMap,
   takeUntil,
   tap,
+  throwError,
 } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { UrlMonitorPollingError } from './polling-error';
@@ -24,7 +25,7 @@ export interface FetchUrlMonitorConfig {
 export class FetchUrlMonitor implements UrlMonitor {
   protected dataToMonitor: UrlMonitorStartData<unknown>[] = [];
   protected polling$ = interval(this.config.pollIntervalMs).pipe(
-    shareReplay({ refCount: true, bufferSize: 1 })
+    shareReplay({ refCount: true, bufferSize: 1 }),
   );
   protected sink$ = new Subject<Observable<unknown>>();
   protected subscription = new Subscription();
@@ -34,12 +35,12 @@ export class FetchUrlMonitor implements UrlMonitor {
   }
 
   async start<T = Response>(
-    data: UrlMonitorStartData<T>
+    data: UrlMonitorStartData<T>,
   ): Promise<UrlMonitorRef<T>> {
     const stop$ = new Subject<void>();
     const data$ = this.poll(data).pipe(
       takeUntil(stop$.pipe(this.syncDataToMonitor(data))),
-      shareReplay({ refCount: true, bufferSize: 1 })
+      shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
     this.sink$.next(data$);
@@ -73,9 +74,11 @@ export class FetchUrlMonitor implements UrlMonitor {
       startWith(0),
       switchMap(() =>
         fromFetch(request, { selector }).pipe(
-          catchError((e) => of(new UrlMonitorPollingError(request, e)))
-        )
-      )
+          catchError((e) =>
+            throwError(() => new UrlMonitorPollingError(request, e)),
+          ),
+        ),
+      ),
     );
   }
 }

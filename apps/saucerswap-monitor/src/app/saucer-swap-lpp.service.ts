@@ -4,7 +4,7 @@ import {
   SaucerSwapLPPMonitor,
 } from '@crypto-monitor/saucer-swap-monitor';
 import { FetchUrlMonitor } from '@crypto-monitor/url-monitor';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, retry, shareReplay } from 'rxjs';
 import { KeyValueStorageService } from './key-value-storage.service';
 import { SaucerSwapPushService } from './saucer-swap-push.service';
 import { OnAppInit } from './app-init.service';
@@ -27,6 +27,12 @@ export class SaucerSwapLPPService implements OnAppInit, OnDestroy {
     monitor: new FetchUrlMonitor({ pollIntervalMs: 1000 * 60 * 5 }),
     poolsPollIntervalMs: 1000 * 60 * 1,
   });
+  private readonly wallets$ = this.monitor
+    .getWallets()
+    .pipe(
+      retry({ delay: 1000 }),
+      shareReplay({ refCount: true, bufferSize: 1 }),
+    );
 
   constructor(
     private readonly storage: KeyValueStorageService<string[]>,
@@ -47,7 +53,7 @@ export class SaucerSwapLPPService implements OnAppInit, OnDestroy {
   }
 
   getWallets(): Observable<SaucerSwapLPWallet[]> {
-    return this.monitor.getWallets();
+    return this.wallets$;
   }
 
   async monitorWallet(walletId: string) {

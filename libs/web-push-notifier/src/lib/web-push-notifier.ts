@@ -127,7 +127,7 @@ export class WebPushNotifier<TExtras = unknown>
 export interface WebPushNotificationData<TExtras>
   extends NotificationData<TExtras> {
   recipient: WebPushNotificationRecipient<TExtras>;
-  ttlSeconds: number;
+  ttlSeconds?: number;
   topic?: string;
   urgency?: WebPushNotificationUrgency;
 }

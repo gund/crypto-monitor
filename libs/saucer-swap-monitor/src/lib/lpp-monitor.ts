@@ -3,6 +3,7 @@ import {
   BehaviorSubject,
   EMPTY,
   Observable,
+  catchError,
   combineLatest,
   map,
   shareReplay,
@@ -14,14 +15,17 @@ import {
   PositionWithPool,
 } from './api-interfaces';
 import { SaucerSwapMonitorRef } from './monitor-ref';
+import { Logger } from './logger';
 
 export interface SaucerSwapLPPMonitorConfig {
   monitor: UrlMonitor;
   poolsPollIntervalMs?: number;
+  logger?: Logger;
 }
 
 export class SaucerSwapLPPMonitor {
-  protected monitor = this.config.monitor;
+  protected readonly monitor = this.config.monitor;
+  protected readonly logger = this.config.logger || console;
 
   protected readonly poolRef$ = new BehaviorSubject<
     UrlMonitorRef<ApiLiquidityPoolV2[]> | undefined
@@ -31,7 +35,16 @@ export class SaucerSwapLPPMonitor {
   );
 
   protected readonly pools$ = this.poolRef$.pipe(
-    switchMap((ref) => (ref ? ref.data : EMPTY)),
+    switchMap((ref) =>
+      ref
+        ? ref.data.pipe(
+            catchError((e) => {
+              this.logger.error('Failed to update pool data:', e);
+              return EMPTY;
+            }),
+          )
+        : EMPTY,
+    ),
     map(
       (pools) =>
         new Map(
@@ -144,27 +157,34 @@ export class SaucerSwapLPPMonitor {
     positions$: Observable<ApiNftPositionV2[]>,
   ): Observable<SaucerSwapLPPosition[]> {
     const activePositions$ = positions$.pipe(
+      catchError((e) => {
+        this.logger.error('Failed to update positions:', e);
+        return EMPTY;
+      }),
       map((positions) => positions.filter((position) => !position.deleted)),
     );
 
     return combineLatest([this.pools$, activePositions$]).pipe(
       map(([pools, positions]) =>
-        positions.map((position) => {
+        positions.flatMap((position) => {
           const pool = pools.get(this.positionPoolHash(position));
 
           if (!pool) {
-            throw new Error(
+            this.logger.error(
               `Could not find pool for position ${
                 position.tokenSN
               } with hash ${this.positionPoolHash(position)}`,
             );
+            return [];
           }
 
-          return {
-            ...position,
-            pool,
-            isInRange: this.isPositionInRange(position, pool),
-          };
+          return [
+            {
+              ...position,
+              pool,
+              isInRange: this.isPositionInRange(position, pool),
+            },
+          ];
         }),
       ),
       shareReplay({ bufferSize: 1, refCount: true }),

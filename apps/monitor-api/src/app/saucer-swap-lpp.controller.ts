@@ -1,5 +1,13 @@
 import { WebPushNotificationSubscription } from '@crypto-monitor/web-push-notifier';
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { SaucerSwapLPPService } from './saucer-swap-lpp.service';
 import { SaucerSwapConfigService } from './saucer-swap-config.service';
 
@@ -27,7 +35,7 @@ export class SaucerSwapLPPController {
       });
       return { success: true };
     } catch (e) {
-      console.error(`Failed to subscribe wallet ${walletId}:`, e, subscription);
+      Logger.error(`Failed to subscribe wallet ${walletId}:`, e, subscription);
       return { success: false };
     }
   }
@@ -44,7 +52,7 @@ export class SaucerSwapLPPController {
       });
       return { success: true };
     } catch (e) {
-      console.error(
+      Logger.error(
         `Failed to unsubscribe wallet ${walletId}:`,
         e,
         subscription,
