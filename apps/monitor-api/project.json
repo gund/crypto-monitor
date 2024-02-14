@@ -51,8 +51,9 @@
       "executor": "nx:run-commands",
       "outputs": [],
       "options": {
-        "command": "docker buildx build --platform {args.platforms} -t gundua/crypto-monitor:latest {args.output} -f apps/monitor-api/container/Dockerfile .",
-        "output": ""
+        "command": "docker buildx build --platform {args.platforms} -t gundua/crypto-monitor:{args.v} {args.output} -f apps/monitor-api/container/Dockerfile .",
+        "output": "",
+        "v": "latest"
       },
       "configurations": {
         "init": {
@@ -66,6 +67,21 @@
         },
         "all": {
           "platforms": "linux/amd64,linux/arm64/v8"
+        }
+      }
+    },
+    "deploy-k8s": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "kubectl set image deployments/crypto-monitor-api crypto-monitor-api=gundua/crypto-monitor:{args.v}"
+      },
+      "configurations": {
+        "staus": {
+          "command": "kubectl rollout status deployments/kubernetes-bootcamp"
+        },
+        "undo": {
+          "command": "kubectl rollout undo deployments/crypto-monitor-api"
         }
       }
     }

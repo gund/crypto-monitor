@@ -1,12 +1,10 @@
 import { PositionWithPool } from './api-interfaces';
 
-export class SaucerSwapLPPOutOfRangeEvent {
-  readonly type = 'ss:lpp:out-of-range';
-  readonly positionId;
-  readonly poolId;
+export class SaucerSwapLPPositionsOutOfRangeEvent {
+  readonly type = 'ss:lp-positions:out-of-range';
+  readonly positionIds;
 
-  constructor(position: PositionWithPool) {
-    this.positionId = position.tokenSN;
-    this.poolId = position.pool.id;
+  constructor(positions: PositionWithPool[]) {
+    this.positionIds = positions.map((p) => p.tokenSN);
   }
 }

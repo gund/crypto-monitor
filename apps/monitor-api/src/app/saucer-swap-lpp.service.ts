@@ -57,11 +57,11 @@ export class SaucerSwapLPPService extends SaucerSwapLPP {
 
   protected override getNotificationData(
     recipient: NotificationRecipient<SaucerSwapLPPWalletData>,
-    position: PositionWithPool,
+    positions: PositionWithPool[],
   ) {
     return {
-      ...super.getNotificationData(recipient, position),
-      payload: { notification: new SSLPPOutOfRangeNotification(position) },
+      ...super.getNotificationData(recipient, positions),
+      payload: { notification: new SSLPPOutOfRangeNotification(positions) },
       urgency: WebPushNotificationUrgency.High,
     } as WebPushNotificationData<SaucerSwapLPPWalletData>;
   }

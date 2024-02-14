@@ -5,6 +5,7 @@ import {
   Observable,
   catchError,
   combineLatest,
+  debounceTime,
   map,
   shareReplay,
   switchMap,
@@ -165,6 +166,7 @@ export class SaucerSwapLPPMonitor {
     );
 
     return combineLatest([this.pools$, activePositions$]).pipe(
+      debounceTime(0),
       map(([pools, positions]) =>
         positions.flatMap((position) => {
           const pool = pools.get(this.positionPoolHash(position));

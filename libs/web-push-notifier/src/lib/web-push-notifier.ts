@@ -6,7 +6,7 @@ import {
 } from '@crypto-monitor/notifier';
 import { KeyValueStorage } from '@crypto-monitor/storage';
 import { v5 as uuidv5 } from 'uuid';
-import { sendNotification } from 'web-push';
+import { SendResult, sendNotification } from 'web-push';
 import { WebPushNotification } from './notification';
 import {
   WebPushNotificationRecipient,
@@ -43,22 +43,28 @@ export class WebPushNotifier<TExtras = unknown>
   async sendNotification(
     data: WebPushNotificationData<TExtras>,
   ): Promise<WebPushNotification<TExtras>> {
-    const response = await sendNotification(
-      {
-        endpoint: data.recipient.data.endpoint,
-        keys: {
-          auth: data.recipient.data.authKey,
-          p256dh: data.recipient.data.p256dhKey,
+    let response: SendResult;
+    try {
+      response = await sendNotification(
+        {
+          endpoint: data.recipient.data.endpoint,
+          keys: {
+            auth: data.recipient.data.authKey,
+            p256dh: data.recipient.data.p256dhKey,
+          },
         },
-      },
-      JSON.stringify(data.payload),
-      {
-        vapidDetails: this.#vapidDetails,
-        TTL: data.ttlSeconds,
-        topic: data.topic,
-        urgency: data.urgency,
-      },
-    );
+        JSON.stringify(data.payload),
+        {
+          vapidDetails: this.#vapidDetails,
+          TTL: data.ttlSeconds,
+          topic: data.topic,
+          urgency: data.urgency,
+        },
+      );
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
 
     const resourceUrl =
       response.headers['location'] || response.headers['Location'];
