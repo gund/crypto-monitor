@@ -5,7 +5,6 @@ import {
   SaucerSwapLPP,
   SaucerSwapLPPMonitor,
   SaucerSwapLPPWalletData,
-  SaucerSwapNotifier,
 } from '@crypto-monitor/saucer-swap-monitor';
 import { FetchUrlMonitor } from '@crypto-monitor/url-monitor';
 import {
@@ -16,7 +15,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import { SSLPPOutOfRangeNotification } from './events';
 import { SaucerSwapConfigService } from './saucer-swap-config.service';
-import { WebPushNotifierWithIdGeneratorAdapter } from './web-push-notifier-adapter';
+import { SaucerSwapWebPushNotifier } from './web-push-notifier-adapter';
 
 @Injectable()
 export class SaucerSwapLPPService extends SaucerSwapLPP {
@@ -33,7 +32,7 @@ export class SaucerSwapLPPService extends SaucerSwapLPP {
     >({
       path: configService.notifierStoragePath,
     });
-    const notifier = new WebPushNotifierWithIdGeneratorAdapter({
+    const notifier = new SaucerSwapWebPushNotifier({
       storage: storage,
       vapidEmail: configService.vapidEmail,
       vapidPublicKey: configService.vapidPublicKey,
@@ -45,7 +44,7 @@ export class SaucerSwapLPPService extends SaucerSwapLPP {
 
     super({
       monitor: monitor,
-      notifier: new SaucerSwapNotifier(notifier),
+      notifier: notifier,
       notifierRegistry: notifier,
       logger: Logger,
     });

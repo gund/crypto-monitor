@@ -3,10 +3,11 @@ import {
   NotificationSubscription,
   Notifier,
   NotifierRegistry,
+  RecipientGoneError,
 } from '@crypto-monitor/notifier';
 import { KeyValueStorage } from '@crypto-monitor/storage';
 import { v5 as uuidv5 } from 'uuid';
-import { SendResult, sendNotification } from 'web-push';
+import { SendResult, WebPushError, sendNotification } from 'web-push';
 import { WebPushNotification } from './notification';
 import {
   WebPushNotificationRecipient,
@@ -44,6 +45,7 @@ export class WebPushNotifier<TExtras = unknown>
     data: WebPushNotificationData<TExtras>,
   ): Promise<WebPushNotification<TExtras>> {
     let response: SendResult;
+
     try {
       response = await sendNotification(
         {
@@ -62,7 +64,11 @@ export class WebPushNotifier<TExtras = unknown>
         },
       );
     } catch (e) {
-      console.log(e);
+      if (e instanceof WebPushError) {
+        if (e.statusCode === 410) {
+          throw new RecipientGoneError(data.recipient, e);
+        }
+      }
       throw e;
     }
 

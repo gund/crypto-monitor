@@ -3,18 +3,22 @@ import {
   NotificationRecipient,
   NotificationSubscription,
   NotifierRegistry,
+  RecipientGoneError,
 } from '@crypto-monitor/notifier';
 import {
   OperatorFunction,
   Subscription,
   catchError,
   combineLatest,
+  debounceTime,
   defer,
+  filter,
   map,
   merge,
   retry,
   switchMap,
   tap,
+  throwError,
 } from 'rxjs';
 import { PositionWithPool } from './api-interfaces';
 import { SaucerSwapLPPositionsOutOfRangeEvent } from './events';
@@ -150,7 +154,7 @@ export class SaucerSwapLPP {
             this.logger.log(`Recipients to notify:`);
             recipients.forEach((r) =>
               this.logger.log(
-                `${r.recipientId} with positions: ${this.getPositionsIds(
+                `- ${r.recipientId} with positions: ${this.getPositionsIds(
                   r.positions,
                 )}`,
               ),
@@ -181,6 +185,7 @@ export class SaucerSwapLPP {
         switchMap((wallets) =>
           combineLatest(wallets.map((wallet) => wallet.positions$)),
         ),
+        debounceTime(0),
         map((positions) => positions.flat()),
         map((positions) => {
           const recipients = new Map<
@@ -200,31 +205,36 @@ export class SaucerSwapLPP {
               this.walletIdToRecipientIds.get(position.accountId) ?? [],
             );
 
-            recipientIds.forEach((recipientId) => {
-              if (!recipients.has(recipientId)) {
-                recipients.set(recipientId, {
-                  recipientId,
-                  positions: [],
-                  positionIds: new Set(),
-                });
-              }
-
-              if (
+            recipientIds
+              .filter(
+                (recipientId) =>
+                  !this.isRecipientNotified(recipientId, position.tokenSN),
+              )
+              .forEach((recipientId) => {
+                if (!recipients.has(recipientId)) {
+                  recipients.set(recipientId, {
+                    recipientId,
+                    positions: [],
+                    positionIds: new Set(),
+                  });
+                }
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                recipients.get(recipientId)!.positionIds.has(position.tokenSN)
-              ) {
-                return;
-              }
+                const recipient = recipients.get(recipientId)!;
 
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              recipients.get(recipientId)!.positions.push(position);
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              recipients.get(recipientId)!.positionIds.add(position.tokenSN);
-            });
+                if (recipient.positionIds.has(position.tokenSN)) {
+                  return;
+                }
+
+                recipient.positions.push(position);
+                recipient.positionIds.add(position.tokenSN);
+              });
           });
 
-          return Array.from(recipients.values());
+          return Array.from(recipients.values()).filter(
+            (recipient) => recipient.positions.length > 0,
+          );
         }),
+        filter((recipients) => recipients.length > 0),
       );
   }
 
@@ -236,59 +246,52 @@ export class SaucerSwapLPP {
       recipients$.pipe(
         switchMap((recipients) =>
           merge(
-            ...recipients.map((recipient) =>
-              defer(() => this.notifyRecipient(recipient)).pipe(
-                tap({
-                  error: (e) =>
-                    this.logger.error(
-                      `Failed to notify recipient ${
-                        recipient.recipientId
-                      } about out of range positions: ${this.getPositionsIds(
-                        recipient.positions,
-                      )}! Retrying...`,
-                      JSON.stringify(e),
-                    ),
-                }),
-                retry({
-                  count: this.config.notificationRetryCount ?? 5,
-                  delay: 1000,
-                  resetOnSuccess: true,
-                }),
-                catchError((e) => {
-                  this.logger.error(
-                    `Removing recipient ${
-                      recipient.recipientId
-                    } from monitoring due to notification failure: ${JSON.stringify(
-                      e,
-                    )}`,
-                  );
-                  return this.cleanupRecipient(recipient.recipientId);
-                }),
-              ),
-            ),
+            ...recipients.map((recipient) => this.notifyRecipient(recipient)),
           ),
         ),
       );
   }
 
-  protected async notifyRecipient(data: RecipientWithPositions) {
-    const positionsToNotify = data.positions.filter(
-      (position) =>
-        !this.notifiedRecipientsByPosition
-          .get(position.tokenSN)
-          ?.has(data.recipientId),
+  protected notifyRecipient(recipient: RecipientWithPositions) {
+    return defer(() => this.sendNotification(recipient)).pipe(
+      catchError((e) => {
+        if (e instanceof RecipientGoneError) {
+          this.logger.error(
+            `Recipient ${recipient.recipientId} is gone! Removing from monitoring...`,
+          );
+          return this.cleanupRecipient(recipient.recipientId);
+        }
+
+        return throwError(() => e);
+      }),
+      tap({
+        error: (e) =>
+          this.logger.error(
+            `Failed to notify recipient ${
+              recipient.recipientId
+            } about out of range positions: ${this.getPositionsIds(
+              recipient.positions,
+            )}! Retrying...`,
+            JSON.stringify(e),
+          ),
+      }),
+      retry({
+        count: this.config.notificationRetryCount ?? 5,
+        delay: 1000,
+        resetOnSuccess: true,
+      }),
+      catchError((e) => {
+        this.logger.error(
+          `Removing recipient ${
+            recipient.recipientId
+          } from monitoring due to notification failure: ${JSON.stringify(e)}`,
+        );
+        return this.cleanupRecipient(recipient.recipientId);
+      }),
     );
+  }
 
-    if (positionsToNotify.length === 0) {
-      return this.logger.log(
-        `Recipient ${
-          data.recipientId
-        } already notified about out of range positions: ${this.getPositionsIds(
-          data.positions,
-        )}`,
-      );
-    }
-
+  protected async sendNotification(data: RecipientWithPositions) {
     const recipient = await this.notifierRegistry.findRecipient(
       data.recipientId,
     );
@@ -307,7 +310,7 @@ export class SaucerSwapLPP {
       this.getNotificationData(recipient, data.positions),
     );
 
-    positionsToNotify.forEach((position) => {
+    data.positions.forEach((position) => {
       if (!this.notifiedRecipientsByPosition.has(position.tokenSN)) {
         this.notifiedRecipientsByPosition.set(position.tokenSN, new Set());
       }
@@ -350,6 +353,16 @@ export class SaucerSwapLPP {
       recipient,
       payload: new SaucerSwapLPPositionsOutOfRangeEvent(positions),
     };
+  }
+
+  protected isRecipientNotified(
+    recipientId: string,
+    positionId: number,
+  ): boolean {
+    return (
+      this.notifiedRecipientsByPosition.get(positionId)?.has(recipientId) ??
+      false
+    );
   }
 }
 

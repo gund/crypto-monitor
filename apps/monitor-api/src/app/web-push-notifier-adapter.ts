@@ -1,4 +1,7 @@
-import { NotifierWithIdGenerator } from '@crypto-monitor/saucer-swap-monitor';
+import {
+  NotifierWithIdGenerator,
+  saucerSwapNotifier,
+} from '@crypto-monitor/saucer-swap-monitor';
 import {
   WebPushNotificationSubscription,
   WebPushNotifier,
@@ -12,3 +15,7 @@ export class WebPushNotifierWithIdGeneratorAdapter<TExtras = unknown>
     return super.generateRecipientId(data);
   }
 }
+
+export const SaucerSwapWebPushNotifier = saucerSwapNotifier(
+  WebPushNotifierWithIdGeneratorAdapter,
+);
