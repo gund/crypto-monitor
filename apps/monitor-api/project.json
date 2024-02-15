@@ -78,7 +78,7 @@
       },
       "configurations": {
         "staus": {
-          "command": "kubectl rollout status deployments/kubernetes-bootcamp"
+          "command": "kubectl rollout status deployments/crypto-monitor-api"
         },
         "undo": {
           "command": "kubectl rollout undo deployments/crypto-monitor-api"
