@@ -12,7 +12,7 @@ permissions:
 
 env:
   NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
-  IMAGE_TAG: 'sha:${{ github.sha }}'
+  IMAGE_TAG: 'sha-${{ github.sha }}'
 
 concurrency:
   group: ${{ github.workflow }}
