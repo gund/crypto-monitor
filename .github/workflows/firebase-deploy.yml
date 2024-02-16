@@ -1,13 +1,25 @@
 name: Deploy to Firebase
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: [Test]
+    types: [completed]
+    branches: [main]
 
 permissions:
+  actions: read
   contents: read
+
+env:
+  NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: Firebase
     steps:
@@ -21,14 +33,14 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
-      - run: pnpm i --frozen-lockfile
-      - run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}' > firebase-service-account.json
-        name: Authorize Firebase
-      - run: npx nx run-many --target=deploy-firebase
-        name: Deploying to Firebase
+      - uses: nrwl/nx-set-shas@v3
+      - name: Firebase - Authorize
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}' > firebase-service-account.json
+      - name: Firebase - Deploy
+        run: npx nx affected -t firebase-deploy
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
           SSM_API_URL: ${{ secrets.SSM_API_URL }}
-      - run: rm firebase-service-account.json
-        name: Post Authorize Firebase
+      - name: Post Firebase - Authorize
+        run: rm firebase-service-account.json
         if: always()

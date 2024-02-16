@@ -1,0 +1,55 @@
+name: Deploy to K8S
+
+on:
+  workflow_run:
+    workflows: ['Deploy to DockerHub']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  NX_CLOUD_AUTH_TOKEN: ${{ secrets.NX_CLOUD_AUTH_TOKEN }}
+  IMAGE_TAG: 'sha:${{ github.sha }}'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: K8S
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v3
+        with:
+          version: '8'
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm i --frozen-lockfile
+      - uses: nrwl/nx-set-shas@v3
+      - name: K8S - Authenticate
+        uses: azure/k8s-set-context@v2
+        with:
+          method: service-account
+          k8s-url: ${{ secrets.K8S_SERVER }}
+          k8s-secret: ${{ secrets.K8S_SECRET }}
+      - name: K8S - Apply changes
+        run: npx nx affected -t k8s-apply --parallel=false
+      - name: K8S - Trigger deployment
+        run: npx nx affected -t k8s-deploy --parallel=false
+      - name: K8S - Monitor deployment
+        run: npx nx affected -t k8s-deploy -c=staus --parallel=false
+      # TODO: Revert deployment of only failed projects
+      #   id: update-deployment
+      # - name: K8S - Revert deployment if failed
+      #   run: npx nx affected -t k8s-deploy -c=revert --parallel=false
+      #   if: ${{ steps.update-deployment.outcome == 'failure' }}

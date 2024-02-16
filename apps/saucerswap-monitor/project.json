@@ -110,7 +110,7 @@
         }
       }
     },
-    "deploy-firebase": {
+    "firebase-deploy": {
       "executor": "nx:run-commands",
       "options": {
         "command": "npx firebase deploy --only hosting:saucerswap-monitor"

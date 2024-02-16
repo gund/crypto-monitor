@@ -37,13 +37,21 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "deploy-firebase": {
+    "firebase-deploy": {
       "cache": false,
       "dependsOn": ["build"],
       "inputs": ["production", "^production"]
     },
     "image": {
       "cache": true,
+      "inputs": ["production", "^production"]
+    },
+    "k8s-apply": {
+      "cache": false,
+      "inputs": ["k8s-config-files"]
+    },
+    "k8s-deploy": {
+      "cache": false,
       "inputs": ["production", "^production"]
     }
   },
@@ -62,7 +70,8 @@
       "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.js"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [],
+    "k8s-config-files": ["{projectRoot}/deployment/**/*"]
   },
   "nxCloudAccessToken": "ODVmNGRhZGItYjdlZC00Yzg0LWE0M2UtNzViNmJlNmY3ZmIxfHJlYWQ=",
   "generators": {

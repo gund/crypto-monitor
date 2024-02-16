@@ -70,7 +70,14 @@
         }
       }
     },
-    "deploy-k8s": {
+    "k8s-apply": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "kubectl apply -f apps/monitor-api/deployment"
+      }
+    },
+    "k8s-deploy": {
       "executor": "nx:run-commands",
       "outputs": [],
       "options": {
@@ -80,7 +87,7 @@
         "staus": {
           "command": "kubectl rollout status deployments/crypto-monitor-api"
         },
-        "undo": {
+        "revert": {
           "command": "kubectl rollout undo deployments/crypto-monitor-api"
         }
       }
