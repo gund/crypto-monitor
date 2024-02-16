@@ -43,13 +43,13 @@ jobs:
           k8s-url: ${{ secrets.K8S_SERVER }}
           k8s-secret: ${{ secrets.K8S_SECRET }}
       - name: K8S - Apply changes
-        run: npx nx affected -t k8s-apply --parallel=false
+        run: npx nx run-many --parallel=false -t k8s-apply
       - name: K8S - Trigger deployment
-        run: npx nx affected -t k8s-deploy --parallel=false
+        run: npx nx run-many --parallel=false -t k8s-deploy --v='${{ env.IMAGE_TAG }}'
       - name: K8S - Monitor deployment
-        run: npx nx affected -t k8s-deploy -c=staus --parallel=false
+        run: npx nx run-many --parallel=false -t k8s-deploy -c=staus
       # TODO: Revert deployment of only failed projects
       #   id: update-deployment
       # - name: K8S - Revert deployment if failed
-      #   run: npx nx affected -t k8s-deploy -c=revert --parallel=false
+      #   run: npx nx run-many --parallel=false -t k8s-deploy -c=revert
       #   if: ${{ steps.update-deployment.outcome == 'failure' }}
