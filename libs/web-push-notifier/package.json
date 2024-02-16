@@ -2,7 +2,13 @@
   "name": "@crypto-monitor/web-push-notifier",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "uuid": "^9.0.1",
+    "web-push": "^3.6.7"
+  },
+  "peerDependencies": {
+    "@crypto-monitor/notifier": "^0.0.1",
+    "@crypto-monitor/storage": "^0.0.1"
   },
   "type": "commonjs",
   "main": "./src/index.js",

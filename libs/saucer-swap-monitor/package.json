@@ -2,7 +2,13 @@
   "name": "@crypto-monitor/saucer-swap-monitor",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "uuid": "^9.0.1"
+  },
+  "peerDependencies": {
+    "@crypto-monitor/notifier": "^0.0.1",
+    "@crypto-monitor/url-monitor": "^0.0.1",
+    "rxjs": "^7.8.0"
   },
   "type": "commonjs",
   "main": "./src/index.js",
