@@ -8,10 +8,10 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { SaucerSwapLPPService } from './saucer-swap-lpp.service';
-import { SaucerSwapConfigService } from './saucer-swap-config.service';
+import { SaucerSwapLPPService } from './lpp.service';
+import { SaucerSwapConfigService } from './config.service';
 
-@Controller('saucer-swap-lpp')
+@Controller('lpp')
 export class SaucerSwapLPPController {
   constructor(
     private readonly saucerSwapLPPService: SaucerSwapLPPService,

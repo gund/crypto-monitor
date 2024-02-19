@@ -64,6 +64,8 @@ export class SaucerSwapLPP {
       })),
     );
 
+    this.logger.log(`Starting monitoring of ${data.length} recipients`);
+
     data.forEach(({ recipient, extras }) => {
       if (!this.walletIdToRecipientIds.has(extras.walletId)) {
         this.walletIdToRecipientIds.set(extras.walletId, new Set());
@@ -71,6 +73,8 @@ export class SaucerSwapLPP {
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.walletIdToRecipientIds.get(extras.walletId)!.add(recipient.id);
+
+      this.logger.log(` - ${recipient.id} with wallet ${extras.walletId}`);
     });
 
     await this.monitor.init(data.map((d) => d.extras));

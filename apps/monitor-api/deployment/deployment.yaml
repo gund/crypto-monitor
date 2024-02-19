@@ -31,6 +31,8 @@ spec:
         - name: crypto-monitor-api
           image: gundua/crypto-monitor:latest
           env:
+            - name: PUBLIC_URL
+              value: 'https://mistakenly-winning-gull.ngrok-free.app'
             - name: ENABLE_CORS
               value: 'https://gund-crypto-monitor.web.app'
             - name: PORT

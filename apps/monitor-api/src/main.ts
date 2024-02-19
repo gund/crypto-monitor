@@ -8,6 +8,7 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       PORT?: string;
+      HOST?: string;
       ENABLE_CORS?: string;
     }
   }
@@ -23,7 +24,7 @@ async function bootstrap() {
   }
 
   await app
-    .enableVersioning({ type: VersioningType.URI, defaultVersion: '1' })
+    .enableVersioning({ type: VersioningType.URI, defaultVersion: '2' })
     .listen(port, host);
 
   Logger.log(`🚀 Application is running on: http://${host}:${port}`);

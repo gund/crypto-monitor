@@ -13,9 +13,9 @@ import {
   WebPushNotificationUrgency,
 } from '@crypto-monitor/web-push-notifier';
 import { Injectable, Logger } from '@nestjs/common';
-import { SSLPPOutOfRangeNotification } from './events';
-import { SaucerSwapConfigService } from './saucer-swap-config.service';
-import { SaucerSwapWebPushNotifier } from './web-push-notifier-adapter';
+import { SSLPPOutOfRangeNotification } from './lpp-out-of-range-notification';
+import { SaucerSwapConfigService } from './config.service';
+import { SaucerSwapWebPushNotifier } from './notifier-adapter';
 
 @Injectable()
 export class SaucerSwapLPPService extends SaucerSwapLPP {
