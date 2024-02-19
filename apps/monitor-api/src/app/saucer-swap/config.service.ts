@@ -24,22 +24,22 @@ export class SaucerSwapConfigService {
   readonly positionsPollIntervalMs = this.configService.get(
     'POSITIONS_POLL_INTERVAL_MS',
     1000 * 60 * 5,
-    { infer: true }
+    { infer: true },
   );
   readonly poolsPollIntervalMs = this.configService.get(
     'POOLS_POLL_INTERVAL_MS',
     1000 * 60,
-    { infer: true }
+    { infer: true },
   );
   readonly notifierStoragePath = this.configService.get(
     'NOTIFIER_STORAGE_PATH',
     './data/ss-notifier-db',
-    { infer: true }
+    { infer: true },
   );
   readonly vapidEmail = this.configService.get(
     'VAPID_EMAIL',
     'test@localhost',
-    { infer: true }
+    { infer: true },
   );
   readonly vapidPublicKey = this.configService.getOrThrow('VAPID_PUBLIC_KEY', {
     infer: true,
