@@ -8,6 +8,7 @@
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.2",
     "@nestjs/platform-express": "^10.0.2",
+    "express": "^4.18.2",
     "lmdb": "^2.9.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.8.0",
