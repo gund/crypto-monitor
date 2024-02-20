@@ -17,7 +17,7 @@ import { SaucerSwapApiToken } from './saucer-swap-api.token';
 @Injectable({ providedIn: 'root' })
 export class SaucerSwapPushService {
   private readonly vapidKeyUrl = new URL(
-    '/v1/saucer-swap-lpp/vapid-key',
+    '/v2/saucer-swap/lpp/vapid-key',
     this.apiUrl,
   ).toString();
 
@@ -29,7 +29,7 @@ export class SaucerSwapPushService {
 
   subscribe(walletId: string) {
     const url = new URL(
-      `/v1/saucer-swap-lpp/subscribe/${walletId}`,
+      `/v2/saucer-swap/lpp/subscribe/${walletId}`,
       this.apiUrl,
     ).toString();
 
@@ -44,7 +44,7 @@ export class SaucerSwapPushService {
 
   unsubscribe(walletId: string) {
     const url = new URL(
-      `/v1/saucer-swap-lpp/unsubscribe/${walletId}`,
+      `/v2/saucer-swap/lpp/unsubscribe/${walletId}`,
       this.apiUrl,
     ).toString();
 

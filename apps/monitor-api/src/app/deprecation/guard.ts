@@ -1,12 +1,13 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Request, Response } from 'express';
 import { AppConfigService } from '../app-config/config.service';
+import { FrameworkExecutionContext } from '../framework';
 import { Deprecation } from './decorator';
 
 /**
@@ -21,6 +22,8 @@ export class DeprecationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly appConfigService: AppConfigService,
+    @Inject(FrameworkExecutionContext)
+    private readonly context: FrameworkExecutionContext,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -33,11 +36,11 @@ export class DeprecationGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest() as Request;
-    const res = context.switchToHttp().getResponse() as Response;
+    const req = this.context.getRequest(context);
+    const res = this.context.getResponse(context);
 
     Logger.warn(
-      `Call to a deprecated API: ${req.method} ${req.originalUrl} by ${req.hostname} [${req.ip}]`,
+      `Call to a deprecated API: ${req.getMethod()} ${req.getUrl()} by ${req.getHostname()} [${req.getIp()}]`,
       'Deprecation warning',
     );
 
