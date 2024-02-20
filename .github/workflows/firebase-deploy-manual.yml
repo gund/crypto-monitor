@@ -34,7 +34,7 @@ jobs:
       - name: Firebase - Authorize
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GUND_CRYPTO_MONITOR }}' > firebase-service-account.json
       - name: Firebase - Deploy
-        run: npx nx run-many -t firebase-deploy
+        run: npx nx run-many -t firebase-deploy --skip-nx-cache
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
           SSM_API_URL: ${{ secrets.SSM_API_URL }}
