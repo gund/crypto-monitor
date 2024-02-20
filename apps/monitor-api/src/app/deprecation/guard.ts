@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AppConfigService } from '../app-config/config.service';
@@ -19,6 +20,8 @@ import { Deprecation } from './decorator';
  */
 @Injectable()
 export class DeprecationGuard implements CanActivate {
+  private readonly logger = new Logger('DeprecationGuard');
+
   constructor(
     private readonly reflector: Reflector,
     private readonly appConfigService: AppConfigService,
@@ -37,12 +40,20 @@ export class DeprecationGuard implements CanActivate {
     }
 
     const req = this.context.getRequest(context);
-    const res = this.context.getResponse(context);
 
-    Logger.warn(
+    this.logger.warn(
       `Call to a deprecated API: ${req.getMethod()} ${req.getUrl()} by ${req.getHostname()} [${req.getIp()}]`,
-      'Deprecation warning',
     );
+
+    if (deprecation.removeBy && deprecation.removeBy <= new Date()) {
+      this.logger.warn(
+        `Blocked call to a deprecated API: ${req.getMethod()} ${req.getUrl()} by ${req.getHostname()} [${req.getIp()}]`,
+      );
+
+      throw new NotFoundException(`Cannot ${req.getMethod()} ${req.getUrl()}`);
+    }
+
+    const res = this.context.getResponse(context);
 
     // Deprecation date in seconds since epoch
     res.setHeader(
