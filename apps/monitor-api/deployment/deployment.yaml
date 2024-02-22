@@ -58,10 +58,10 @@ spec:
             - containerPort: 4000
           resources:
             limits:
-              memory: '0.5Gi'
+              memory: '100Mi'
               cpu: '0.5'
             requests:
-              memory: '0.1Gi'
+              memory: '50Mi'
               cpu: '0.1'
           volumeMounts:
             - mountPath: /data

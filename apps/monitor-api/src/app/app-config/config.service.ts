@@ -14,7 +14,9 @@ export interface AppConfigEnv {
 
 @Injectable()
 export class AppConfigService {
-  readonly publicUrl = this.configService.getOrThrow('PUBLIC_URL');
+  readonly publicUrl = this.configService.getOrThrow('PUBLIC_URL', {
+    infer: true,
+  });
 
   constructor(private readonly configService: ConfigService<AppConfigEnv>) {}
 }
