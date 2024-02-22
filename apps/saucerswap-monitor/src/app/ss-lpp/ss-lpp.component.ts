@@ -17,10 +17,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltip } from '@angular/material/tooltip';
 import { getLPPositionUrl } from '@crypto-monitor/saucer-swap-monitor';
-import { SaucerSwapLPPService } from '../saucer-swap-lpp.service';
-import { SsAddWalletDialogComponent } from '../ss-add-wallet-dialog/ss-add-wallet-dialog.component';
 import { map } from 'rxjs';
 import { PositionsSummaryPipe } from '../positions-summary.pipe';
+import { SaucerSwapLPPService } from '../saucer-swap-lpp.service';
+import { SsAddWalletDialogComponent } from '../ss-add-wallet-dialog/ss-add-wallet-dialog.component';
 
 @Component({
   selector: 'sm-ss-lpp',

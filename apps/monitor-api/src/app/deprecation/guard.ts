@@ -8,15 +8,22 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AppConfigService } from '../app-config/config.service';
-import { FrameworkExecutionContext } from '../framework';
-import { Deprecation } from './decorator';
+import { FrameworkExecutionContext, FrameworkRequest } from '../framework';
+import {
+  Deprecation,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  DeprecationMetadata,
+  DeprecationReplacement,
+} from './decorator';
 
 /**
- * Guard to add deprecation warning headers to the response and log a warning.
+ * Guard that adds deprecation headers to the response and logs a warning.
+ * Use the \@{@link Deprecation()} decorator to mark a controller/method as deprecated.
  *
- * Use the \@{@link Deprecation()} decorator to mark a controller or method as deprecated.
+ * NOTE: Will block the request if {@link DeprecationMetadata.removeBy} date is defined and has passed.
  *
- * RFC: https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-deprecation-header
+ * @see {@link https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-deprecation-header | Deprecation HTTP Header RFC Draft}
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc8594 | Sunset HTTP Header RFC}
  */
 @Injectable()
 export class DeprecationGuard implements CanActivate {
@@ -40,51 +47,56 @@ export class DeprecationGuard implements CanActivate {
     }
 
     const req = this.context.getRequest(context);
+    const reqName = this.getRequestName(req);
+    const reqInfo = `${reqName} by ${this.getRequestSource(req)}`;
 
-    this.logger.warn(
-      `Call to a deprecated API: ${req.getMethod()} ${req.getUrl()} by ${req.getHostname()} [${req.getIp()}]`,
-    );
+    this.logger.warn(`Call to a deprecated API: ${reqInfo}`);
 
     if (deprecation.removeBy && deprecation.removeBy <= new Date()) {
-      this.logger.warn(
-        `Blocked call to a deprecated API: ${req.getMethod()} ${req.getUrl()} by ${req.getHostname()} [${req.getIp()}]`,
-      );
+      this.logger.warn(`Blocked call to a deprecated API: ${reqInfo}`);
 
-      throw new NotFoundException(`Cannot ${req.getMethod()} ${req.getUrl()}`);
+      throw new NotFoundException(`Cannot ${reqName}`);
     }
 
     const res = this.context.getResponse(context);
 
-    // Deprecation date in seconds since epoch
-    res.setHeader(
-      'Deprecation',
-      `@${(deprecation.since ?? new Date()).getTime() / 1000}`,
-    );
+    res.setHeader('Deprecation', this.getDeprecationTime(deprecation.since));
 
     if (deprecation.replacedBy) {
-      const link = this.resolveLink(deprecation.replacedBy.link);
-
-      res.setHeader(
-        'Link',
-        `<${link}>; rel="deprecation"; type="${
-          deprecation.replacedBy.type ?? 'text/html'
-        }"`,
-      );
+      res.setHeader('Link', this.getReplacementLink(deprecation.replacedBy));
     }
 
     if (deprecation.removeBy) {
-      // Sunset date in UTC format
-      res.setHeader('Sunset', `${deprecation.removeBy.toUTCString()}`);
+      res.setHeader('Sunset', this.getSunsetDate(deprecation.removeBy));
     }
 
     return true;
   }
 
-  private resolveLink(link: string): string {
-    if (link.startsWith('http')) {
-      return link;
-    }
+  private getRequestName(req: FrameworkRequest) {
+    return `${req.getMethod()} ${req.getUrl()}`;
+  }
 
-    return new URL(link, this.appConfigService.publicUrl).toString();
+  private getRequestSource(req: FrameworkRequest) {
+    return `${req.getHostname()} [${req.getIp()}]`;
+  }
+
+  /** Deprecation time is in seconds since epoch */
+  private getDeprecationTime(since = new Date()) {
+    return `@${Math.ceil(since.getTime() / 1000)}`;
+  }
+
+  /** Sunset date is in UTC format */
+  private getSunsetDate(removeBy: Date) {
+    return removeBy.toUTCString();
+  }
+
+  private getReplacementLink(replacedBy: DeprecationReplacement) {
+    const link = replacedBy.link.startsWith('http')
+      ? replacedBy.link
+      : new URL(replacedBy.link, this.appConfigService.publicUrl).toString();
+    const type = replacedBy.type ?? 'text/html';
+
+    return `<${link}>; rel="deprecation"; type="${type}"`;
   }
 }

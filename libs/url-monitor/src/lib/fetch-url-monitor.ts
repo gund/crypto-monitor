@@ -70,15 +70,13 @@ export class FetchUrlMonitor implements UrlMonitor {
         ? interval(data.pollIntervalMs)
         : this.polling$;
 
+    const wrapError = catchError((e) =>
+      throwError(() => new UrlMonitorPollingError(request, e)),
+    );
+
     return polling$.pipe(
       startWith(0),
-      switchMap(() =>
-        fromFetch(request, { selector }).pipe(
-          catchError((e) =>
-            throwError(() => new UrlMonitorPollingError(request, e)),
-          ),
-        ),
-      ),
+      switchMap(() => fromFetch(request, { selector }).pipe(wrapError)),
     );
   }
 }
