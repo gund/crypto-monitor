@@ -10,7 +10,6 @@ import {
   startWith,
   switchMap,
   takeUntil,
-  tap,
   throwError,
 } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
@@ -23,7 +22,6 @@ export interface FetchUrlMonitorConfig {
 }
 
 export class FetchUrlMonitor implements UrlMonitor {
-  protected dataToMonitor: UrlMonitorStartData<unknown>[] = [];
   protected polling$ = interval(this.config.pollIntervalMs).pipe(
     shareReplay({ refCount: true, bufferSize: 1 }),
   );
@@ -39,7 +37,7 @@ export class FetchUrlMonitor implements UrlMonitor {
   ): Promise<UrlMonitorRef<T>> {
     const stop$ = new Subject<void>();
     const data$ = this.poll(data).pipe(
-      takeUntil(stop$.pipe(this.syncDataToMonitor(data))),
+      takeUntil(stop$),
       shareReplay({ refCount: true, bufferSize: 1 }),
     );
 
@@ -50,15 +48,6 @@ export class FetchUrlMonitor implements UrlMonitor {
 
   stopAll() {
     this.subscription.unsubscribe();
-  }
-
-  protected syncDataToMonitor<T>(data: UrlMonitorStartData<T>) {
-    this.dataToMonitor.push(data);
-
-    return tap<void>({
-      complete: () =>
-        this.dataToMonitor.slice(this.dataToMonitor.indexOf(data), 1),
-    });
   }
 
   protected poll<T>(data: UrlMonitorStartData<T>): Observable<T>;

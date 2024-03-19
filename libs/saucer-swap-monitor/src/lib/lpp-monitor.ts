@@ -3,24 +3,27 @@ import {
   BehaviorSubject,
   EMPTY,
   Observable,
-  catchError,
+  OperatorFunction,
   combineLatest,
   debounceTime,
   map,
+  retry,
   shareReplay,
   switchMap,
+  tap,
 } from 'rxjs';
 import {
   ApiLiquidityPoolV2,
   ApiNftPositionV2,
   PositionWithPool,
 } from './api-interfaces';
-import { SaucerSwapMonitorRef } from './monitor-ref';
 import { Logger } from './logger';
+import { SSPositionMonitorRef } from './position-monitor-ref';
 
 export interface SaucerSwapLPPMonitorConfig {
   monitor: UrlMonitor;
   poolsPollIntervalMs?: number;
+  retryDelayMs?: number;
   logger?: Logger;
 }
 
@@ -31,43 +34,17 @@ export class SaucerSwapLPPMonitor {
   protected readonly poolRef$ = new BehaviorSubject<
     UrlMonitorRef<ApiLiquidityPoolV2[]> | undefined
   >(undefined);
-  protected readonly walletRefs$ = new BehaviorSubject<SaucerSwapMonitorRef[]>(
+  protected readonly walletRefs$ = new BehaviorSubject<SSPositionMonitorRef[]>(
     [],
   );
 
   protected readonly pools$ = this.poolRef$.pipe(
-    switchMap((ref) =>
-      ref
-        ? ref.data.pipe(
-            catchError((e) => {
-              this.logger.error('Failed to update pool data:', e);
-              return EMPTY;
-            }),
-          )
-        : EMPTY,
-    ),
-    map(
-      (pools) =>
-        new Map(
-          pools.flatMap((pool) => [
-            [this.poolHash(pool), pool],
-            [this.poolHashRev(pool), pool],
-          ]),
-        ),
-    ),
+    this.poolsToMap(),
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
   protected readonly wallets$ = this.walletRefs$.pipe(
-    map((refs) =>
-      refs.map(
-        (wallet) =>
-          ({
-            walletId: wallet.walletId,
-            positions$: this.addPoolToPositions(wallet.data),
-          } as SaucerSwapLPWallet),
-      ),
-    ),
+    this.positionsToWallets(),
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
@@ -137,7 +114,7 @@ export class SaucerSwapLPPMonitor {
   }
 
   protected async monitorWallet(data: SaucerSwapLPPWalletData) {
-    return new SaucerSwapMonitorRef(
+    return new SSPositionMonitorRef(
       data.walletId,
       await this.monitor.start({
         url: `https://api.saucerswap.finance/V2/nfts/${data.walletId}/positions`,
@@ -154,43 +131,97 @@ export class SaucerSwapLPPMonitor {
     });
   }
 
-  protected addPoolToPositions(
-    positions$: Observable<ApiNftPositionV2[]>,
-  ): Observable<SaucerSwapLPPosition[]> {
-    const activePositions$ = positions$.pipe(
-      catchError((e) => {
-        this.logger.error('Failed to update positions:', e);
-        return EMPTY;
-      }),
-      map((positions) => positions.filter((position) => !position.deleted)),
-    );
+  protected poolsToMap(): OperatorFunction<
+    UrlMonitorRef<ApiLiquidityPoolV2[]> | undefined,
+    Map<string, ApiLiquidityPoolV2>
+  > {
+    return (ref$) =>
+      ref$.pipe(
+        switchMap((ref) =>
+          ref
+            ? ref.data.pipe(
+                tap({
+                  error: (e) =>
+                    this.logger.error(
+                      'Failed to update pool data, retrying...',
+                      e,
+                    ),
+                }),
+                retry({ delay: this.config.retryDelayMs ?? 1000 }),
+              )
+            : EMPTY,
+        ),
+        map(
+          (pools) =>
+            new Map(
+              pools.flatMap((pool) => [
+                [this.poolHash(pool), pool],
+                [this.poolHashRev(pool), pool],
+              ]),
+            ),
+        ),
+      );
+  }
 
-    return combineLatest([this.pools$, activePositions$]).pipe(
-      debounceTime(0),
-      map(([pools, positions]) =>
-        positions.flatMap((position) => {
-          const pool = pools.get(this.positionPoolHash(position));
-
-          if (!pool) {
-            this.logger.error(
-              `Could not find pool for position ${
-                position.tokenSN
-              } with hash ${this.positionPoolHash(position)}`,
+  protected positionsToWallets(): OperatorFunction<
+    SSPositionMonitorRef[],
+    SaucerSwapLPWallet[]
+  > {
+    return (positions$) =>
+      positions$.pipe(
+        map((positions) =>
+          positions.map((position) => {
+            const activePositions$ = position.data.pipe(
+              tap({
+                error: (e) =>
+                  this.logger.error(
+                    'Failed to update positions, retrying...',
+                    e,
+                  ),
+              }),
+              retry({ delay: this.config.retryDelayMs ?? 1000 }),
+              map((positions) =>
+                positions.filter((position) => !position.deleted),
+              ),
             );
-            return [];
-          }
 
-          return [
-            {
-              ...position,
-              pool,
-              isInRange: this.isPositionInRange(position, pool),
-            },
-          ];
-        }),
-      ),
-      shareReplay({ bufferSize: 1, refCount: true }),
-    );
+            const positions$ = combineLatest([
+              this.pools$,
+              activePositions$,
+            ]).pipe(
+              debounceTime(0),
+              map(([pools, positions]) =>
+                positions.flatMap((position) => {
+                  const pool = pools.get(this.positionPoolHash(position));
+
+                  if (!pool) {
+                    this.logger.error(
+                      `Could not find pool for position ${
+                        position.tokenSN
+                      } with hash ${this.positionPoolHash(position)}`,
+                    );
+                    return [];
+                  }
+
+                  return [
+                    {
+                      ...position,
+                      pool,
+                      isInRange: this.isPositionInRange(position, pool),
+                    },
+                  ];
+                }),
+              ),
+              shareReplay({ bufferSize: 1, refCount: true }),
+            );
+
+            return {
+              walletId: position.walletId,
+              positions$,
+            };
+          }),
+        ),
+      );
   }
 
   protected poolHash(pool: ApiLiquidityPoolV2): string {
