@@ -38,6 +38,7 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
           SSM_API_URL: ${{ secrets.SSM_API_URL }}
+          SSM_API_HEADERS: ${{ secrets.SSM_API_HEADERS }}
       - name: Post Firebase - Authorize
         run: rm firebase-service-account.json
         if: always()

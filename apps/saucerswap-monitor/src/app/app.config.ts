@@ -1,9 +1,5 @@
-import { HttpClientModule } from '@angular/common/http';
-import {
-  ApplicationConfig,
-  importProvidersFrom,
-  isDevMode,
-} from '@angular/core';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -11,11 +7,12 @@ import { provideAppInit } from './app-init.service';
 import { appRoutes } from './app.routes';
 import { SaucerSwapLPPService } from './saucer-swap-lpp.service';
 import { UpdateService } from './update.service';
+import { saucerSwapPushInterceptor } from './sauser-swap-push.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync(),
-    importProvidersFrom(HttpClientModule),
+    provideHttpClient(withInterceptors([saucerSwapPushInterceptor()])),
     provideRouter(appRoutes),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
