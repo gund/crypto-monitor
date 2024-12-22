@@ -6,6 +6,7 @@
     "serve:monitor-app": "npx nx serve monitor-app --devRemotes=$(npx nx show projects --projects \"apps/*-monitor\" | sed -z 's/\\n/,/g;s/,$/\\n/')"
   },
   "private": true,
+  "packageManager": "pnpm@9.15.1",
   "devDependencies": {
     "@angular-devkit/build-angular": "~17.1.2",
     "@angular-devkit/core": "~17.1.2",
