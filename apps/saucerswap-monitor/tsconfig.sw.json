@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": [],
+    "target": "ESNext",
+    "lib": ["ESNext", "dom", "WebWorker"]
+  },
+  "files": ["src/service-worker.ts"],
+  "include": ["src/**/*.d.ts"],
+  "exclude": [
+    "src/main.ts",
+    "src/app/remote.ts",
+    "jest.config.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts"
+  ]
+}

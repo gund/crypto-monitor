@@ -21,14 +21,16 @@ import { Logger } from './logger';
 import { SSPositionMonitorRef } from './position-monitor-ref';
 
 export interface SaucerSwapLPPMonitorConfig {
-  monitor: UrlMonitor;
-  poolsPollIntervalMs?: number;
+  walletMonitor: UrlMonitor;
+  poolMonitor?: UrlMonitor;
   retryDelayMs?: number;
   logger?: Logger;
 }
 
 export class SaucerSwapLPPMonitor {
-  protected readonly monitor = this.config.monitor;
+  protected readonly walletMonitor = this.config.walletMonitor;
+  protected readonly poolMonitor =
+    this.config.poolMonitor ?? this.walletMonitor;
   protected readonly logger = this.config.logger || console;
 
   protected readonly poolRef$ = new BehaviorSubject<
@@ -116,18 +118,17 @@ export class SaucerSwapLPPMonitor {
   protected async monitorWallet(data: SaucerSwapLPPWalletData) {
     return new SSPositionMonitorRef(
       data.walletId,
-      await this.monitor.start({
+      await this.walletMonitor.start<ApiNftPositionV2[]>({
         url: `https://api.saucerswap.finance/V2/nfts/${data.walletId}/positions`,
-        selector: (response) => response.json() as Promise<ApiNftPositionV2[]>,
+        selector: (response) => response.json(),
       }),
     );
   }
 
   protected monitorPools() {
-    return this.monitor.start({
+    return this.poolMonitor.start<ApiLiquidityPoolV2[]>({
       url: 'https://api.saucerswap.finance/v2/pools',
-      pollIntervalMs: this.config.poolsPollIntervalMs,
-      selector: (response) => response.json() as Promise<ApiLiquidityPoolV2[]>,
+      selector: (response) => response.json(),
     });
   }
 

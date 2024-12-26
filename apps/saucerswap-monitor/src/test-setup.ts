@@ -6,3 +6,6 @@ globalThis.ngJest = {
   },
 };
 import 'jest-preset-angular/setup-jest';
+// Jest is **retarded** and complains somehow hides Node own Response class
+// So we import this shit from another lib to shut it the fuck up, jeez...
+import 'whatwg-fetch';

@@ -9,8 +9,7 @@ export interface UrlMonitorRef<T> extends MonitorRef<T> {
   readonly url: string;
 }
 
-export interface UrlMonitorStartData<T> extends RequestInit {
+export interface UrlMonitorStartData<T = Response> extends RequestInit {
   url: string;
-  pollIntervalMs?: number;
   selector?(response: Response): ObservableInput<T>;
 }

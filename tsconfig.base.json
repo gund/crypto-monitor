@@ -20,6 +20,12 @@
       "@crypto-monitor/conventional-mf": ["libs/conventional-mf/src/index.ts"],
       "@crypto-monitor/lmdb-storage": ["libs/lmdb-storage/src/index.ts"],
       "@crypto-monitor/monitor": ["libs/monitor/src/index.ts"],
+      "@crypto-monitor/ngsw-notifications": [
+        "libs/ngsw-notifications/src/index.ts"
+      ],
+      "@crypto-monitor/ngsw-notifications/*": [
+        "libs/ngsw-notifications/*/src/index.ts"
+      ],
       "@crypto-monitor/notifier": ["libs/notifier/src/index.ts"],
       "@crypto-monitor/saucer-swap-monitor": [
         "libs/saucer-swap-monitor/src/index.ts"
@@ -31,5 +37,5 @@
       ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": ["node_modules", "tmp", ".angular", ".nx", ".pnpm-store"]
 }

@@ -14,3 +14,7 @@ mat-toolbar {
 mat-panel-description {
   justify-content: space-between;
 }
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}

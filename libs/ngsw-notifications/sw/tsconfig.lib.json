@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "types": ["node"],
+    "lib": ["ESNext", "dom", "WebWorker"]
+  },
+  "include": ["src/**/*.ts", "sw/**/*.ts"],
+  "exclude": [
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "sw/**/*.spec.ts"
+  ]
+}

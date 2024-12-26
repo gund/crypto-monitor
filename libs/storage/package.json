@@ -2,7 +2,8 @@
   "name": "@crypto-monitor/storage",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "idb-keyval": "^6.2.1"
   },
   "type": "commonjs",
   "main": "./src/index.js",

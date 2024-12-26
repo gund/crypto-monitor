@@ -1,0 +1,31 @@
+<button
+  mat-icon-button
+  [attr.aria-label]="
+    isCheckingPositions$
+      | async
+      | then : 'Background check in progress'
+      | else
+        : (isCheckScheduled$
+            | async
+            | then : 'Background check scheduled'
+            | else : 'Trigger background check')
+  "
+  [matTooltip]="
+    isCheckingPositions$
+      | async
+      | then : 'Background check in progress'
+      | else
+        : (isCheckScheduled$
+            | async
+            | then : 'Background check scheduled'
+            | else : 'Trigger background check')
+  "
+  [disabled]="isDisabled$ | async"
+>
+  <mat-icon>{{
+    isCheckingPositions$
+      | async
+      | then : 'pending'
+      | else : (isCheckScheduled$ | async | then : 'schedule' | else : 'sync')
+  }}</mat-icon>
+</button>
