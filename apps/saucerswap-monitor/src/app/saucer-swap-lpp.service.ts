@@ -3,11 +3,25 @@ import {
   PositionWithPool,
   SaucerSwapLPPMonitor,
 } from '@crypto-monitor/saucer-swap-monitor';
-import { FetchUrlMonitor } from '@crypto-monitor/url-monitor';
-import { Observable, firstValueFrom, retry, shareReplay } from 'rxjs';
-import { KeyValueStorageService } from './key-value-storage.service';
-import { SaucerSwapPushService } from './saucer-swap-push.service';
+import {
+  FetchUrlMonitor,
+  PollMonitorScheduler,
+  SWPBSMonitorSchedulerRef,
+} from '@crypto-monitor/url-monitor';
+import {
+  Observable,
+  filter,
+  firstValueFrom,
+  map,
+  retry,
+  shareReplay,
+} from 'rxjs';
 import { OnAppInit } from './app-init.service';
+import { HttpUrlMonitorFetcherService } from './http-url-monitor-fetcher.service';
+import { SaucerSwapMonitorService } from './saucer-swap-monitor.service';
+import { SSWalletStorageService } from './ss-wallet-storage.service';
+import { SWChannelService } from './sw-channel.service';
+import { EventsMonitorScheduler } from './events-monitor-scheduler';
 
 export interface SaucerSwapLPWallet {
   walletId: string;
@@ -20,13 +34,31 @@ export interface SaucerSwapLPPosition extends PositionWithPool {
 
 @Injectable({ providedIn: 'root' })
 export class SaucerSwapLPPService implements OnAppInit, OnDestroy {
-  private static readonly WALLET_IDS_KEY = 'ss:wallet-ids';
+  private static readonly POLL_INTERVAL = 1000 * 60 * 5;
+  private static readonly POOLS_POLL_INTERVAL = 1000 * 60;
 
-  private readonly walletIds = new Set<string>();
+  private readonly swCheckCompleted$ = this.swChannel.messages.pipe(
+    filter((message) => message.data.type === 'positions-check-completed'),
+    map(() => new SWPBSMonitorSchedulerRef()),
+  );
+
   private readonly monitor = new SaucerSwapLPPMonitor({
-    monitor: new FetchUrlMonitor({ pollIntervalMs: 1000 * 60 * 5 }),
-    poolsPollIntervalMs: 1000 * 60 * 1,
+    walletMonitor: new FetchUrlMonitor({
+      scheduler: new EventsMonitorScheduler(
+        new PollMonitorScheduler(SaucerSwapLPPService.POLL_INTERVAL),
+        this.swCheckCompleted$,
+      ),
+      fetcher: this.urlFetcherService,
+    }),
+    poolMonitor: new FetchUrlMonitor({
+      scheduler: new EventsMonitorScheduler(
+        new PollMonitorScheduler(SaucerSwapLPPService.POOLS_POLL_INTERVAL),
+        this.swCheckCompleted$,
+      ),
+      fetcher: this.urlFetcherService,
+    }),
   });
+
   private readonly wallets$ = this.monitor
     .getWallets()
     .pipe(
@@ -35,17 +67,16 @@ export class SaucerSwapLPPService implements OnAppInit, OnDestroy {
     );
 
   constructor(
-    private readonly storage: KeyValueStorageService<string[]>,
-    private readonly ssPushService: SaucerSwapPushService,
+    private readonly walletStorage: SSWalletStorageService,
+    private readonly ssMonitorService: SaucerSwapMonitorService,
+    private readonly urlFetcherService: HttpUrlMonitorFetcherService,
+    private readonly swChannel: SWChannelService,
   ) {}
 
   async onAppInit() {
-    const walletIds = await this.storage.get(
-      SaucerSwapLPPService.WALLET_IDS_KEY,
-    );
-
-    walletIds?.forEach((walletId) => this.walletIds.add(walletId));
-    await this.monitor.init(walletIds?.map((walletId) => ({ walletId })));
+    const walletIds = await this.walletStorage.getAllWallets();
+    await this.monitor.init(walletIds.map((walletId) => ({ walletId })));
+    await this.ssMonitorService.init?.();
   }
 
   ngOnDestroy(): void {
@@ -57,25 +88,14 @@ export class SaucerSwapLPPService implements OnAppInit, OnDestroy {
   }
 
   async monitorWallet(walletId: string) {
-    await firstValueFrom(this.ssPushService.subscribe(walletId));
-
-    this.walletIds.add(walletId);
+    await this.walletStorage.addWallet(walletId);
     await this.monitor.start({ walletId });
-    await this.persistWalletIds();
+    await firstValueFrom(this.ssMonitorService.subscribe(walletId));
   }
 
   async stopMonitoringWallet(walletId: string) {
-    await firstValueFrom(this.ssPushService.unsubscribe(walletId));
-
-    this.walletIds.delete(walletId);
+    await this.walletStorage.removeWallet(walletId);
     await this.monitor.stop({ walletId });
-    await this.persistWalletIds();
-  }
-
-  private async persistWalletIds() {
-    await this.storage.set(
-      SaucerSwapLPPService.WALLET_IDS_KEY,
-      Array.from(this.walletIds),
-    );
+    await firstValueFrom(this.ssMonitorService.unsubscribe(walletId));
   }
 }

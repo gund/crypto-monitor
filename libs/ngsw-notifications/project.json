@@ -1,0 +1,29 @@
+{
+  "name": "ngsw-notifications",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ngsw-notifications/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/ngsw-notifications",
+        "main": "libs/ngsw-notifications/src/index.ts",
+        "tsConfig": "libs/ngsw-notifications/tsconfig.lib.json",
+        "assets": ["libs/ngsw-notifications/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/ngsw-notifications/jest.config.ts"
+      }
+    }
+  },
+  "tags": ["lib"]
+}

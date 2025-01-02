@@ -6,18 +6,25 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideAppInit } from './app-init.service';
 import { appRoutes } from './app.routes';
 import { SaucerSwapLPPService } from './saucer-swap-lpp.service';
-import { UpdateService } from './update.service';
 import { saucerSwapPushInterceptor } from './sauser-swap-push.interceptor';
+import { SSWalletStorageService } from './ss-wallet-storage.service';
+import { SWChannelService } from './sw-channel.service';
+import { UpdateService } from './update.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([saucerSwapPushInterceptor()])),
     provideRouter(appRoutes),
-    provideServiceWorker('ngsw-worker.js', {
+    provideServiceWorker('/service-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
-    ...provideAppInit(UpdateService, SaucerSwapLPPService),
+    ...provideAppInit(
+      UpdateService,
+      SaucerSwapLPPService,
+      SSWalletStorageService,
+      SWChannelService,
+    ),
   ],
 };

@@ -1,21 +1,23 @@
 import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable, isDevMode } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { SwPush } from '@angular/service-worker';
 import { WebPushNotificationSubscription } from '@crypto-monitor/web-push-notifier';
 import {
-  EMPTY,
   Observable,
-  endWith,
-  identity,
+  combineLatest,
+  firstValueFrom,
   map,
   of,
   switchMap,
   take,
 } from 'rxjs';
+import { endWithInDev, skipInDev } from './operators/dev';
 import { SaucerSwapApiToken } from './saucer-swap-api.token';
+import { SaucerSwapMonitorService } from './saucer-swap-monitor.service';
+import { SSWalletStorageService } from './ss-wallet-storage.service';
 
 @Injectable({ providedIn: 'root' })
-export class SaucerSwapPushService {
+export class SaucerSwapPushService implements SaucerSwapMonitorService {
   private readonly vapidKeyUrl = new URL(
     '/v2/saucer-swap/lpp/vapid-key',
     this.apiUrl,
@@ -24,8 +26,17 @@ export class SaucerSwapPushService {
   constructor(
     private readonly http: HttpClient,
     private readonly swPush: SwPush,
+    private readonly walletStorage: SSWalletStorageService,
     @Inject(SaucerSwapApiToken) private readonly apiUrl: URL,
   ) {}
+
+  async init(): Promise<void> {
+    const walletIds = await this.walletStorage.getAllWallets();
+
+    await firstValueFrom(
+      combineLatest(walletIds.map((walletId) => this.subscribe(walletId))),
+    );
+  }
 
   subscribe(walletId: string) {
     const url = new URL(
@@ -38,7 +49,12 @@ export class SaucerSwapPushService {
       switchMap((subscription) =>
         this.http.post<{ success: boolean }>(url, subscription),
       ),
-      isDevMode() ? endWith({ success: true }) : identity,
+      map((res) => {
+        if (!res.success) {
+          throw new Error(`Subscription to wallet ${walletId} failed`);
+        }
+      }),
+      endWithInDev(),
     );
   }
 
@@ -53,7 +69,12 @@ export class SaucerSwapPushService {
       switchMap((subscription) =>
         this.http.delete<{ success: boolean }>(url, { body: subscription }),
       ),
-      isDevMode() ? endWith({ success: true }) : identity,
+      map((res) => {
+        if (!res.success) {
+          throw new Error(`Unsubscription to wallet ${walletId} failed`);
+        }
+      }),
+      endWithInDev(),
     );
   }
 
@@ -61,8 +82,7 @@ export class SaucerSwapPushService {
     WebPushNotificationSubscription<undefined>
   > {
     return this.swPush.subscription.pipe(
-      // In dev mode skip the subscription
-      isDevMode() ? () => EMPTY : identity,
+      skipInDev(),
       switchMap((subscription) =>
         subscription ? of(subscription) : this.requestSubscription(),
       ),

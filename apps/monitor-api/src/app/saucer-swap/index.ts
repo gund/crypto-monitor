@@ -1,5 +1,4 @@
 export * from './config.service';
-export * from './lpp-out-of-range-notification';
 export * from './lpp.controller';
 export * from './lpp.service';
 export * from './notifier-adapter';

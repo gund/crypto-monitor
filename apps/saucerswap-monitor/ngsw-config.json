@@ -41,7 +41,7 @@
       "version": 2,
       "cacheConfig": {
         "maxSize": 1,
-        "maxAge": "3d",
+        "maxAge": "1d",
         "timeout": "2s",
         "strategy": "freshness"
       }
@@ -52,9 +52,9 @@
       "version": 2,
       "cacheConfig": {
         "maxSize": 100,
-        "maxAge": "10m",
-        "timeout": "2s",
-        "strategy": "performance"
+        "maxAge": "1d",
+        "timeout": "0u",
+        "strategy": "freshness"
       },
       "cacheQueryOptions": { "ignoreSearch": true }
     }

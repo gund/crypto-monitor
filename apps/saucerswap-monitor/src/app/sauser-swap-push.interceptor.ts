@@ -6,24 +6,28 @@ import {
 } from './saucer-swap-api.token';
 
 export function saucerSwapPushInterceptor(): HttpInterceptorFn {
-  let apiUrl: string | undefined;
-  let apiHeaders: Headers | undefined;
+  let interceptorFn: HttpInterceptorFn = (...args) => {
+    const apiUrl = inject(SaucerSwapApiToken).toString();
+    const apiHeaders = inject(SaucerSwapApiHeadersToken);
 
-  return (req, next) => {
-    if (apiUrl === undefined) {
-      apiUrl = inject(SaucerSwapApiToken).toString();
-      apiHeaders = inject(SaucerSwapApiHeadersToken);
+    if (apiHeaders === undefined) {
+      interceptorFn = (req, next) => next(req);
+    } else {
+      interceptorFn = (req, next) => {
+        if (req.url.startsWith(apiUrl)) {
+          let headers = req.headers;
+          apiHeaders.forEach((value, key) => {
+            headers = headers.append(key, value);
+          });
+          req = req.clone({ headers });
+        }
+
+        return next(req);
+      };
     }
 
-    if (apiHeaders !== undefined && req.url.startsWith(apiUrl)) {
-      console.log('Adding headers to request', req.url, apiHeaders);
-      let headers = req.headers;
-      apiHeaders.forEach((value, key) => {
-        headers = headers.append(key, value);
-      });
-      req = req.clone({ headers });
-    }
-
-    return next(req);
+    return interceptorFn(...args);
   };
+
+  return (req, next) => interceptorFn(req, next);
 }

@@ -12,8 +12,17 @@ export class LmdbStorage<T = unknown> implements KeyValueStorage<T> {
     return this.db.get(key);
   }
 
-  async set(key: StorageKey, value: T): Promise<void> {
+  async set<TT = T>(key: StorageKey, value: TT): Promise<void> {
     await this.db.put(key, value);
+  }
+
+  async update<TT = T>(
+    key: StorageKey,
+    updater: (currentValue: TT | undefined) => TT,
+  ): Promise<void> {
+    await this.db.transaction(async () =>
+      this.db.put(key, updater(await this.db.get(key))),
+    );
   }
 
   async delete(key: StorageKey): Promise<void> {
@@ -22,7 +31,7 @@ export class LmdbStorage<T = unknown> implements KeyValueStorage<T> {
 
   async getAll(): Promise<Record<StorageKey, T>> {
     return Object.fromEntries(
-      this.db.getKeys().map((key) => [key, this.db.get(key)])
+      this.db.getKeys().map((key) => [key, this.db.get(key)]),
     );
   }
 
