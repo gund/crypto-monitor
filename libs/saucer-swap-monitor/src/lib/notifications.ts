@@ -93,4 +93,16 @@ export class SSLPPInRangeNotification extends NGSWNotification<SSLPPInRangeNotif
       this.meta.walletCount > 1 ? 's' : ''
     }.`;
   }
+
+  protected override getData() {
+    return {
+      onActionClick: {
+        default: {
+          operation:
+            NGSWNotificationActionOperationType.NavigateLastFocusedOrOpen,
+          url: '/',
+        },
+      },
+    };
+  }
 }
