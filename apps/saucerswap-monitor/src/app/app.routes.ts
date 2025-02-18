@@ -7,14 +7,7 @@ export const appRoutes: Route[] = [
     redirectTo: 'wallet-positions',
   },
   {
-    path: '',
-    pathMatch: 'full',
-    redirectTo: 'wallet-positions',
-    outlet: 'toolbarActions',
-  },
-  {
     path: 'empty',
-    pathMatch: 'full',
     loadComponent: () =>
       import('./primary-layout/empty-actions.component').then(
         (m) => m.EmptyActionsComponent,

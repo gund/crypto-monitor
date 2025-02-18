@@ -10,6 +10,7 @@ import { saucerSwapPushInterceptor } from './sauser-swap-push.interceptor';
 import { SSWalletStorageService } from './ss-wallet-storage.service';
 import { SWChannelService } from './sw-channel.service';
 import { UpdateService } from './update.service';
+import { RouterSyncService } from './router-sync.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -25,6 +26,7 @@ export const appConfig: ApplicationConfig = {
       SaucerSwapLPPService,
       SSWalletStorageService,
       SWChannelService,
+      RouterSyncService,
     ),
   ],
 };
