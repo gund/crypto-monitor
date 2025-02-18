@@ -32,5 +32,6 @@ export const appRoutes: Route[] = [
     path: 'settings',
     loadComponent: () =>
       import('./settings/settings.component').then((m) => m.SettingsComponent),
+    title: 'Settings',
   },
 ];
