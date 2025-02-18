@@ -1,12 +1,3 @@
-<mat-toolbar color="primary">
-  <span>Saucer Swap - Wallet Positions</span>
-  <span class="toolbar-spacer"></span>
-  <sm-ss-lpp-check-btn
-    *ngIf="canTriggerCheck"
-    (click)="triggerCheck()"
-  ></sm-ss-lpp-check-btn>
-</mat-toolbar>
-
 <mat-accordion multi>
   @for (wallet of wallets$ | async; track wallet.walletId) {
   <mat-expansion-panel [expanded]="isOneWallet$ | async">

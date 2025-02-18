@@ -13,6 +13,7 @@ export const SaucerSwapApiHeadersToken = new InjectionToken(
       let headers: Headers | undefined;
 
       const headersString = process.env.SSM_API_HEADERS;
+
       if (headersString) {
         try {
           headers = new Headers(JSON.parse(headersString));

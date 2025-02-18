@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.toolbar-title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+router-outlet {
+  display: contents;
+}
+
+mat-drawer-container {
+  flex-grow: 1;
+}
+
+mat-drawer {
+  width: 250px;
+  max-width: 100vw;
+}
+
+mat-drawer-content {
+  overflow: auto;
+}

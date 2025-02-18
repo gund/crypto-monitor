@@ -1,0 +1,28 @@
+<mat-nav-list>
+  <a
+    mat-list-item
+    [routerLink]="[
+      {
+        outlets: {
+          primary: 'wallet-positions',
+          toolbarActions: 'wallet-positions'
+        }
+      }
+    ]"
+    routerLinkActive="active"
+    >Wallet Positions</a
+  >
+  <a
+    mat-list-item
+    [routerLink]="[
+      {
+        outlets: {
+          primary: 'settings',
+          toolbarActions: 'empty'
+        }
+      }
+    ]"
+    routerLinkActive="active"
+    >Settings</a
+  >
+</mat-nav-list>

@@ -1,9 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialogActions,
@@ -32,7 +28,6 @@ import { SaucerSwapLPPService } from '../saucer-swap-lpp.service';
   ],
   templateUrl: './ss-add-wallet-dialog.component.html',
   styleUrl: './ss-add-wallet-dialog.component.css',
-  encapsulation: ViewEncapsulation.Emulated,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SsAddWalletDialogComponent {

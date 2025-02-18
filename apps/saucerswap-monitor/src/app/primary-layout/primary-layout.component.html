@@ -1,0 +1,15 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button aria-label="Toggle menu" (click)="drawer.toggle()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span class="toolbar-title">{{ title$ | async }}</span>
+  <router-outlet name="toolbarActions"></router-outlet>
+</mat-toolbar>
+<mat-drawer-container>
+  <mat-drawer #drawer (click)="drawer.close()">
+    <sm-sidenav-menu></sm-sidenav-menu>
+  </mat-drawer>
+  <mat-drawer-content>
+    <router-outlet></router-outlet>
+  </mat-drawer-content>
+</mat-drawer-container>

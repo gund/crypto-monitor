@@ -33,6 +33,10 @@ export class SaucerSwapPushService implements SaucerSwapMonitorService {
   async init(): Promise<void> {
     const walletIds = await this.walletStorage.getAllWallets();
 
+    if (walletIds.length === 0) {
+      return;
+    }
+
     await firstValueFrom(
       combineLatest(walletIds.map((walletId) => this.subscribe(walletId))),
     );

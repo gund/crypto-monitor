@@ -1,12 +1,11 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { PrimaryLayoutComponent } from './primary-layout/primary-layout.component';
 
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [PrimaryLayoutComponent],
   selector: 'sm-app',
-  template: `<router-outlet></router-outlet>`,
-  styles: [],
-  encapsulation: ViewEncapsulation.Emulated,
+  template: `<sm-primary-layout></sm-primary-layout>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {}
