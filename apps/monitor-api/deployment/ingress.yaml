@@ -18,7 +18,18 @@ spec:
                 name: crypto-monitor-api
                 port:
                   number: 4000
+    - host: crypto-monitor-api.gund.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: crypto-monitor-api
+                port:
+                  number: 4000
   tls:
     - hosts:
         - crypto-monitor-api.gund.gay
+        - crypto-monitor-api.gund.io
       secretName: crypto-monitor-api-tls
